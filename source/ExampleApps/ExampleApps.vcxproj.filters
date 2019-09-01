@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\Dev\C++\DirectX11\NoctisEngine\source\ExampleApps\ExampleDx11App.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Dev\C++\DirectX11\NoctisEngine\source\ExampleApps\ExampleDx11App.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Dev\C++\DirectX11\NoctisEngine\source\ExampleApps\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{6E48301A-83D4-35FE-B075-3F8D2DB88A46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{A1AE1C42-D9F0-3814-B2B6-1D4EA56C6C43}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

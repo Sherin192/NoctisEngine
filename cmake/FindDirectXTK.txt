@@ -1,0 +1,30 @@
+FIND_PATH( DirectXTK_INCLUDE_DIR Keyboard.h 
+	/usr/include
+	/usr/local/include
+	/opt/local/include
+	"${CMAKE_SOURCE_DIR}/dependencies/DirectXTK/include"
+	"${CMAKE_SOURCE_DIR}/dependencies/DirectXTK/src"
+)
+FIND_LIBRARY( DirectXTK_LIBRARY DirectXTK
+	/usr/lib64
+	/usr/lib
+	/usr/local/lib
+	/opt/local/lib
+	"${CMAKE_SOURCE_DIR}/dependencies/DirectXTK/lib"
+)
+MESSAGE(STATUS "Found DirectXTK: ${DirectXTK_INCLUDE_DIR}")
+MESSAGE(STATUS "Found DirectXTK: ${DirectXTK_LIBRARY}")
+
+IF(DirectXTK_INCLUDE_DIR AND DirectXTK_LIBRARY)
+	SET( DirectXTK_FOUND TRUE )
+	SET( DirectXTK_LIBRARIES ${DirectXTK_LIBRARY} )
+ENDIF(DirectXTK_INCLUDE_DIR AND DirectXTK_LIBRARY)
+IF(DirectXTK_FOUND)
+	IF(NOT DirectXTK_FIND_QUIETLY)
+	MESSAGE(STATUS "Found DirectXTK: ${DirectXTK_LIBRARY}")
+	ENDIF(NOT DirectXTK_FIND_QUIETLY)
+ELSE(DirectXTK_FOUND)
+	IF(DirectXTK_FIND_REQUIRED)
+	MESSAGE(FATAL_ERROR "Could not find libDirectXTK")
+	ENDIF(DirectXTK_FIND_REQUIRED)
+ENDIF(DirectXTK_FOUND)
