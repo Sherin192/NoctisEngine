@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.8)
+
+add_subdirectory(Assimp)
+if(WIN32)
+add_subdirectory(DirectXTK)
+endif(WIN32)
+add_subdirectory(imgui)
+add_subdirectory(STBImage)
