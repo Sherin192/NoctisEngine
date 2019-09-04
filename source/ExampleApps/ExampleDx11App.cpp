@@ -12,7 +12,9 @@ namespace noctis
 
 	ExampleDx11App::ExampleDx11App(HINSTANCE hInstance)
 		:Dx11App(hInstance)
-	{}
+	{
+		Dx11App::Init();
+	}
 
 
 
@@ -23,16 +25,12 @@ namespace noctis
 	//-----------------------------------------------------------------------------
 	bool ExampleDx11App::Init()
 	{
-		Dx11App::Init();
-
 		m_pipelinePass = new PipelinePass(m_pRenderDevice);
-		//This call sets the renderDevice for the assetImporter.
+		
 		AssetImporter::Instance(m_pRenderDevice);
 
-		//experimental
 		m_pVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingVertexShader.hlsl");
 		m_pPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingPixelShader.hlsl");
-		//end experimental
 		
 		m_pVShader->SetInputLyout({
 			{VertexElement::kPosition, 0, VertexElement::kFloat3 },
@@ -43,29 +41,6 @@ namespace noctis
 			});
 
 		m_pipelinePass->AddShaders(m_pVShader, m_pPShader);
-		m_pRenderDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		::D3D11_BUFFER_DESC constantBufferDesc;
-
-		ZeroMemory(&constantBufferDesc, sizeof(::D3D11_BUFFER_DESC));
-
-		static_assert(sizeof(CBModelData) % 16 == 0);
-		constantBufferDesc.ByteWidth = sizeof(CBModelData);
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.CPUAccessFlags = 0;
-		constantBufferDesc.MiscFlags = 0;
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-		::D3D11_BUFFER_DESC constantBufferFrameDesc;
-
-		ZeroMemory(&constantBufferFrameDesc, sizeof(::D3D11_BUFFER_DESC));
-
-		static_assert(sizeof(CBFrameData) % 16 == 0);
-		constantBufferFrameDesc.ByteWidth = sizeof(CBFrameData);
-		constantBufferFrameDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferFrameDesc.CPUAccessFlags = 0;
-		constantBufferFrameDesc.MiscFlags = 0;
-		constantBufferFrameDesc.Usage = D3D11_USAGE_DEFAULT;
 
 		m_camera = std::make_unique<Camera>(Vector3(15.0f, 5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 		m_camera->InitProjMatrix(0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
@@ -106,13 +81,13 @@ namespace noctis
 		//_______________________________NANO_EXPERIMENT________________________________________________________
 
 		//TODO:Give the model the default transform.
-		m_nanoCrisis = AssetImporter::Instance(m_pRenderDevice).LoadModel(m_pRenderDevice, "..\\resources\\Models\\Sponza\\sponza.obj");
+		m_pSponza = AssetImporter::Instance(m_pRenderDevice).LoadModel(m_pRenderDevice, "..\\resources\\Models\\Sponza\\sponza.obj");
 
 		const DirectX::XMMATRIX sponzaRotation = DirectX::XMMatrixRotationAxis(rotaxis, 0.0f);
 		const DirectX::XMMATRIX sponzaPosition = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 		const DirectX::XMMATRIX sponzaScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 
-		m_nanoCrisis->GetTransform().Set(sponzaRotation, sponzaPosition, sponzaScale);
+		m_pSponza->GetTransform().Set(sponzaRotation, sponzaPosition, sponzaScale);
 		//______________________________________________________________________________________________________
 		DirectionalLight dirLight;
 		dirLight.ambient = { 0.03f, 0.024f, 0.014f, 1.0f };
@@ -174,7 +149,7 @@ namespace noctis
 		//TODO:CHeck why Frame cb is at index 1, consider using index 0?
 		m_pipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
 		m_pipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
-		m_pipelinePass->Render(m_pRenderDevice, *m_nanoCrisis, *m_camera);
+		m_pipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
 #if _DEBUG && 0
 		for (int i = 0; i < 8; ++i)
 		{

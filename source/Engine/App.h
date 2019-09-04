@@ -10,7 +10,6 @@
 #include "Window.h"
 #include "Clock.h"
 
-//class RenderDevice;
 namespace noctis::rdr
 {
 class RenderDevice;
@@ -46,7 +45,6 @@ namespace noctis
 #endif //NOCTIS_USE_IMGUI
 
 		std::shared_ptr<noctis::rdr::RenderDevice>		m_pRenderDevice;
-		//std::shared_ptr<noctis::rdr::RenderDevice>		m_pRenderDevice;
 		std::unique_ptr<Window>				m_pWindow;
 		std::unique_ptr<Clock>				m_pClock;
 	};

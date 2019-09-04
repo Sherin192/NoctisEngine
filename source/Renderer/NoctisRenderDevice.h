@@ -61,6 +61,8 @@ namespace noctis::rdr
 
 			void ClearDepthStencilView(/*TODO pass flags and other arguments*/);
 
+			void SetPrimitiveTopology(Topology topology);
+
 			template <template<typename> typename BufferType, typename DataType, typename... Args>
 			auto CreateBuffer(Args... args);
 			
@@ -73,7 +75,6 @@ namespace noctis::rdr
 
 
 
-		//void	SetPrimitiveTopology(noctis::PrimitiveTopology topology);
 	};
 
 

@@ -44,7 +44,7 @@ namespace rdr{
 		noctis::rdr::CBFrameData						cbFrameData;
 
 		//Experimental
-		std::shared_ptr<rdr::Model>				m_nanoCrisis;
+		std::shared_ptr<rdr::Model>				m_pSponza;
 		
 		noctis::rdr::ConstantBuffer<rdr::CBFrameData>*		m_constantPerFrame;
 		noctis::rdr::ConstantBuffer<rdr::CBModelData>*		m_constantPerObject;

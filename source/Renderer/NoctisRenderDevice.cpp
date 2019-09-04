@@ -36,5 +36,14 @@ namespace noctis::rdr
 	{
 		GetImpl().ClearDepthStencilView();
 	}
+
+
+
+
+
+	void RenderDevice::SetPrimitiveTopology(Topology topology)
+	{
+		GetImpl().SetPrimitiveTopology(topology);
+	}
 }
 

@@ -8,6 +8,7 @@
 #include <array>
 #include <DirectXColors.h>
 #include "DirectXTK/Inc/SimpleMath.h"
+#include "Noctis3DTypes.h"
 //#include "DX11Utils.h"
 
 #if _DEBUG
@@ -35,6 +36,21 @@ enum RasterizerType
 	COUNT
 };
 
+
+static auto NoctisToDx11Topology(noctis::rdr::Topology topology)
+{
+	using namespace noctis::rdr;
+	switch (topology)
+	{
+	case kLineList:
+		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	case kTriangleList:
+		return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+	case kPatch3List:
+		return D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST;
+	}
+}
+
 namespace noctis::rdr
 {
 	//TODO: Rename this to Dx11RenderDevice
@@ -50,11 +66,13 @@ namespace noctis::rdr
 
 		void Present();
 
-		void SetRasterizerState(RasterizerType type);
+		void SetRasterizerState(RasterizerType);
 
 		void ClearRenderTargetView();
 
 		void ClearDepthStencilView(/*todo pass flags and other arguments*/);
+
+		void SetPrimitiveTopology(Topology);
 
 		template <template<typename> typename BufferType, typename DataType, typename... Args>
 		auto	CreateBuffer(Args&& ... args);
@@ -147,6 +165,15 @@ namespace noctis::rdr
 		m_pImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
+
+
+
+
+	template <typename Derived>
+	void Dx11RenderDevice<Derived>::SetPrimitiveTopology(Topology topology)
+	{
+		m_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
 
 
 

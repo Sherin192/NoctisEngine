@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.8)
 project(Renderer)
 
 add_library(Renderer
-    Dx11RenderDevice.h
     NoctisRenderDevice.cpp
     NoctisRenderDevice.h
     NoctisRenderDevice.cpp

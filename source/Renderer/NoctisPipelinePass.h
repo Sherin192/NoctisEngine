@@ -56,7 +56,7 @@ namespace noctis::rdr{
 		{
 			renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
 
-			renderDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			renderDevice->SetPrimitiveTopology(kTriangleList);
 
 			m_pVertexShader->BindInputLayout(renderDevice);
 			/*BindInputLayout(renderDevice);
