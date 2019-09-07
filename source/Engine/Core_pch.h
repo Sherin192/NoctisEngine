@@ -1,11 +1,8 @@
 #pragma once
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <wrl/client.h>
 
-#include <DirectXMath.h>
-
+#define _USE_MATH_DEFINES
+#include <cmath>
 //STL Dependencies
 #include <iostream>
 #include <memory>

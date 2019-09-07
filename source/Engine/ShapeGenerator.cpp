@@ -5,6 +5,7 @@
 
 namespace sg
 {
+	using namespace DirectX;
 	using namespace DirectX::SimpleMath;
 	using noctis::rdr::Vertex;
 
@@ -64,7 +65,7 @@ namespace sg
 							};
 	}
 
-	void ShapeGenerator::CreateSphere(float radius, UINT stackCount, UINT sliceCount, Data& data)
+	void ShapeGenerator::CreateSphere(float radius, uint32_t stackCount, uint32_t sliceCount, Data& data)
 	{
 		data.vertices.push_back(Vertex(Vector3(0.0f, radius, 0.0f), Vector3(0.0f, +1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector2(0.0f, 0.0f)));
 		data.stride = sizeof(Vertex);
@@ -73,12 +74,12 @@ namespace sg
 		float phiStep = DirectX::XM_PI / stackCount;
 		float thetaStep = 2.0f * DirectX::XM_PI / sliceCount;
 
-		for (UINT i = 1; i <= stackCount - 1; ++i)
+		for (uint32_t i = 1; i <= stackCount - 1; ++i)
 		{
 			float phi = i * phiStep;
 
 			// Vertices of ring.
-			for (UINT j = 0; j < sliceCount; ++j)
+			for (uint32_t j = 0; j < sliceCount; ++j)
 			{
 				float theta = j * thetaStep;
 
@@ -94,7 +95,7 @@ namespace sg
 				tangent.z = radius * sinf(phi)*cosf(theta);
 				tangent.Normalize();
 				
-				Vector2 texCoord(theta / XM_2PI, phi / XM_PI);
+				Vector2 texCoord(theta / M_2_PI, phi / M_PI);
 
 				data.vertices.emplace_back(Vertex(Vector3(x, y, z), normal, tangent, texCoord));
 			}
@@ -292,7 +293,7 @@ namespace sg
 //		data.indices = indices;
 //	}
 //
-	void ShapeGenerator::CreatePlane(float width, float depth, UINT wDivisions, UINT hDivisions, Data& data)
+	void ShapeGenerator::CreatePlane(float width, float depth, uint32_t wDivisions, uint32_t hDivisions, Data& data)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;

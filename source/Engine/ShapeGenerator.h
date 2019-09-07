@@ -33,13 +33,6 @@ namespace sg
 	constexpr const char* kShapeNamePlane		= "plane";
 	constexpr const char* kShapeNameSkull		= "skull";
 
-	
-	
-	
-	using namespace DirectX;
-
-
-
 class ShapeGenerator
 {
 public:
@@ -51,10 +44,10 @@ public:
 	}
 
 	void CreateCube(float width, float height, float depth, Data& data);
-	void CreateSphere(float, UINT, UINT, Data&);
+	void CreateSphere(float, uint32_t, uint32_t, Data&);
 	//void CreateCylinder(float topRadius, float bottomRadius, float height, UINT sliceCount, Data& data);
 	//void CreateCone(float radius, float height, UINT sliceCount, Data& data);
-	void CreatePlane(float width, float depth, UINT wDivisions , UINT hDivisions, Data& data);
+	void CreatePlane(float width, float depth, uint32_t wDivisions , uint32_t hDivisions, Data& data);
 
 	void CreateSkull(Data& data);
 
