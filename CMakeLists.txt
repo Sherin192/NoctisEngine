@@ -1,7 +1,7 @@
 #This project tries to follow Modern CMAKE practices explained in 
 #https://gist.github.com/mbinna/c61dbb39bca0e4fb7d1f73b0d66a4fd1
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
 project(Noctis)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,6 +11,8 @@ add_subdirectory(source)
 
 if(WIN32)
 add_executable(${PROJECT_NAME} WIN32 source/winmain.cpp)
+else(LINUX)
+add_executable(${PROJECT_NAME} source/winmain.cpp)
 endif(WIN32)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
