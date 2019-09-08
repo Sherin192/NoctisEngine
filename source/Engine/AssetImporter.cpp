@@ -42,7 +42,7 @@ private:
 
 
 
-std::shared_ptr<rdr::Model> AssetImporter::Load(std::filesystem::path filePath)
+std::shared_ptr<rdr::Model> AssetImporter::LoadModel(std::filesystem::path filePath)
 {
 	return m_pImpl->Load(filePath);
 }
@@ -365,20 +365,5 @@ AssetImporter& AssetImporter::Instance(std::shared_ptr<rdr::RenderDevice>& rende
 	static AssetImporter instance = AssetImporter(renderDevice);
 	return instance;
 }
-
-std::shared_ptr<rdr::Model> AssetImporter::LoadModel(std::shared_ptr<rdr::RenderDevice>& renderDevice, std::filesystem::path filePath)
-{
-	std::shared_ptr<rdr::Model> model;
-	model = AssetImporter::Instance(renderDevice).Load(filePath);
-	return model;
 }
-
-std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::shared_ptr<rdr::RenderDevice>& renderDevice, std::filesystem::path filePath, rdr::TextureType type)
-{
-	std::shared_ptr<rdr::Texture> texture;
-	texture = AssetImporter::Instance(renderDevice).LoadTexture(filePath, type);
-	return texture;
-}
-
- }
 

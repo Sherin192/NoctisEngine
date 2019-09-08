@@ -61,9 +61,9 @@ namespace noctis
 		m_pCrate = std::make_unique<Model>(m_pRenderDevice, sg::Shape::CUBE);
 
 		//Load textures for the model, this is done only for generated models.
-		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance(m_pRenderDevice).LoadTexture(m_pRenderDevice, "..\\resources\\Models\\Crate\\container2.png", TextureType::DIFFUSE);
-		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture(m_pRenderDevice, "..\\resources\\Models\\Crate\\container2_specular.png", TextureType::SPECULAR);
-		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance(m_pRenderDevice).LoadTexture(m_pRenderDevice, "..\\resources\\Models\\Crate\\crate_normal.png", TextureType::NORMAL);
+		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureType::DIFFUSE);
+		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureType::SPECULAR);
+		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureType::NORMAL);
 
 		//Set textures previously loaded, this is also done only for generated models.
 		m_pCrate->SetTexture(crateDiffuse, TextureType::DIFFUSE, sg::kShapeNameCube);
@@ -81,7 +81,7 @@ namespace noctis
 		//_______________________________NANO_EXPERIMENT________________________________________________________
 
 		//TODO:Give the model the default transform.
-		m_pSponza = AssetImporter::Instance(m_pRenderDevice).LoadModel(m_pRenderDevice, "..\\resources\\Models\\Sponza\\sponza.obj");
+		m_pSponza = AssetImporter::Instance(m_pRenderDevice).LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
 
 		const DirectX::XMMATRIX sponzaRotation = DirectX::XMMatrixRotationAxis(rotaxis, 0.0f);
 		const DirectX::XMMATRIX sponzaPosition = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
