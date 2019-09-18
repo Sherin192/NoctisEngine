@@ -18,8 +18,11 @@ add_library(Renderer
     Mesh.cpp
     Model.h
     Model.cpp
-    Texture.h
-    Texture.cpp
+    NoctisTexture.h
+    NoctisTexture.cpp
+    Dx11Texture.h
+    NoctisSampler.h
+    Dx11Sampler.h
     NoctisShader.h
     NoctisShader.cpp
     Dx11Shader.h

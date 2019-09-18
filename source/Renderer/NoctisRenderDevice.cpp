@@ -1,4 +1,5 @@
 #include "NoctisRenderDevice.h"
+#include "NoctisSampler.h"
 
 namespace noctis::rdr
 {
@@ -45,5 +46,13 @@ namespace noctis::rdr
 	{
 		GetImpl().SetPrimitiveTopology(topology);
 	}
+
+
+
+	void RenderDevice::SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler)
+	{
+		GetImpl().SetSampler(slot, num, sampler);
+	}
+
 }
 

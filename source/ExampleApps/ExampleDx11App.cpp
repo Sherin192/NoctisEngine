@@ -4,7 +4,7 @@
 #include "Engine/CameraFPS.h"
 #include "Renderer/Model.h"
 #include "NoctisPipelinePass.h"
-
+#include "Renderer/NoctisSampler.h"
 
 namespace noctis
 {
@@ -61,14 +61,14 @@ namespace noctis
 		m_pCrate = std::make_unique<Model>(m_pRenderDevice, sg::Shape::CUBE);
 
 		//Load textures for the model, this is done only for generated models.
-		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureType::DIFFUSE);
-		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureType::SPECULAR);
-		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureType::NORMAL);
+		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureUsage::DIFFUSE);
+		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureUsage::SPECULAR);
+		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureUsage::NORMAL);
 
 		//Set textures previously loaded, this is also done only for generated models.
-		m_pCrate->SetTexture(crateDiffuse, TextureType::DIFFUSE, sg::kShapeNameCube);
-		m_pCrate->SetTexture(crateSpecular, TextureType::SPECULAR, sg::kShapeNameCube);
-		m_pCrate->SetTexture(crateNormal, TextureType::NORMAL, sg::kShapeNameCube);
+		m_pCrate->SetTexture(crateDiffuse, TextureUsage::DIFFUSE, sg::kShapeNameCube);
+		m_pCrate->SetTexture(crateSpecular, TextureUsage::SPECULAR, sg::kShapeNameCube);
+		m_pCrate->SetTexture(crateNormal, TextureUsage::NORMAL, sg::kShapeNameCube);
 
 		//Create the transform for the model
 		//TODO:Create the model with a default transform of  position (0,0,0), rotation (0,0,0), scale (1,1,1).

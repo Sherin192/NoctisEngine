@@ -140,7 +140,7 @@ namespace noctis::rdr
 
 
 
-	void Model::SetTexture(std::shared_ptr<Texture> & texture, TextureType type, const char* meshName)
+	void Model::SetTexture(std::shared_ptr<Texture> & texture, TextureUsage type, const char* meshName)
 	{
 		for (auto& m : m_meshes)
 		{

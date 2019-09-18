@@ -19,7 +19,7 @@ public:
 	static AssetImporter& Instance(std::shared_ptr<rdr::RenderDevice>& renderDevice);
 
 	std::shared_ptr<rdr::Model>					LoadModel(std::filesystem::path);
-	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureType type);
+	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureUsage type);
 
 private:
 	AssetImporter(std::shared_ptr<rdr::RenderDevice>& renderDevice);

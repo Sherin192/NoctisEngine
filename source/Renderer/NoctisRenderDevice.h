@@ -6,6 +6,8 @@
 namespace noctis::rdr
 {
 
+	class Sampler;
+
 	template <typename DataType>
 	class ConstantBuffer;
 
@@ -62,6 +64,8 @@ namespace noctis::rdr
 			void ClearDepthStencilView(/*TODO pass flags and other arguments*/);
 
 			void SetPrimitiveTopology(Topology topology);
+
+			void SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler);
 
 			template <template<typename> typename BufferType, typename DataType, typename... Args>
 			auto CreateBuffer(Args... args);

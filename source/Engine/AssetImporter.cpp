@@ -1,7 +1,7 @@
 #include "Core_pch.h"
 #include "AssetImporter.h"
 #include "AssetManager.h"
-#include "Renderer/Texture.h"
+#include "Renderer/NoctisTexture.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Model.h"
 #include "assimp/Importer.hpp"
@@ -24,7 +24,7 @@ public:
 	void									ProcessNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&);
 	std::shared_ptr<rdr::Mesh>					ProcessMesh(const aiScene*, aiMesh*);
 	std::shared_ptr<rdr::Texture>				LoadMaterial(aiMaterial *, aiTextureType);
-	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureType);
+	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureUsage);
 	rdr::Material								FillMaterial(const aiMaterial*);
 	void									SetRenderDevice(std::shared_ptr<rdr::RenderDevice>& renderDevice) { m_pRenderDevice = renderDevice; }
 #if _DEBUG
@@ -51,7 +51,7 @@ std::shared_ptr<rdr::Model> AssetImporter::LoadModel(std::filesystem::path fileP
 
 
 
-std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path filePath, rdr::TextureType type)
+std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type)
 {
 	return m_pImpl->LoadTexture(filePath, type);
 }
@@ -59,18 +59,18 @@ std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path f
 
 
 
-static rdr::TextureType ConvertAssimpToEngineType(aiTextureType type)
+static rdr::TextureUsage ConvertAssimpToEngineType(aiTextureType type)
 {
 	switch (type)
 	{
 	case aiTextureType_DIFFUSE:
-		return rdr::TextureType::DIFFUSE;
+		return rdr::TextureUsage::DIFFUSE;
 		break;
 	case aiTextureType_SPECULAR:
-		return rdr::TextureType::SPECULAR;
+		return rdr::TextureUsage::SPECULAR;
 		break;
 	case aiTextureType_HEIGHT:
-		return rdr::TextureType::HEIGHT;
+		return rdr::TextureUsage::HEIGHT;
 		break;
 	}
 }
@@ -200,10 +200,10 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 	std::shared_ptr<rdr::Texture> normalMaps = LoadMaterial(material, aiTextureType_NORMALS);
 	std::shared_ptr<rdr::Texture> heightMaps = LoadMaterial(material, aiTextureType_HEIGHT);
 
-	textures[rdr::TextureType::DIFFUSE] = diffuseMaps;
-	textures[rdr::TextureType::SPECULAR] = specularMaps;
-	textures[rdr::TextureType::NORMAL] = normalMaps;
-	textures[rdr::TextureType::HEIGHT] = heightMaps;
+	textures[rdr::TextureUsage::DIFFUSE] = diffuseMaps;
+	textures[rdr::TextureUsage::SPECULAR] = specularMaps;
+	textures[rdr::TextureUsage::NORMAL] = normalMaps;
+	textures[rdr::TextureUsage::HEIGHT] = heightMaps;
 
 	rdr::Material mesh_mat = FillMaterial(material);
 	std::for_each(textures.begin(), textures.end(), [&mesh_mat](auto& t) {
@@ -266,7 +266,7 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadMaterial(aiMaterial *materi
 }
 
 
-std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::path filePath, rdr::TextureType type)
+std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type)
 {
 	unsigned char *data = nullptr;
 	int width, height, nrChannels;

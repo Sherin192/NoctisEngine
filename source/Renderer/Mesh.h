@@ -3,7 +3,7 @@
 
 #include "NoctisRenderDevice.h"
 #include "NoctisConstantBuffer.h"
-#include "Texture.h"
+#include "NoctisTexture.h"
 #include "Vertex.h"
 
 
@@ -15,7 +15,7 @@ namespace noctis::rdr {
 	class Mesh
 	{
 	public:
-		using TextureArray = std::array<std::shared_ptr<Texture>, TextureType::COUNT>;
+		using TextureArray = std::array<std::shared_ptr<Texture>, TextureUsage::COUNT>;
 
 		Mesh(std::shared_ptr<RenderDevice>&, std::string&, std::vector<Vertex>, std::vector<unsigned>);
 		Mesh(std::shared_ptr<RenderDevice>&, std::string&, std::vector<Vertex>, std::vector<unsigned>, TextureArray);

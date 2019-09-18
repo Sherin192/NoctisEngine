@@ -9,6 +9,7 @@
 #include <DirectXColors.h>
 #include "DirectXTK/Inc/SimpleMath.h"
 #include "Noctis3DTypes.h"
+#include "NoctisSampler.h"
 //#include "DX11Utils.h"
 
 #if _DEBUG
@@ -73,6 +74,8 @@ namespace noctis::rdr
 		void ClearDepthStencilView(/*todo pass flags and other arguments*/);
 
 		void SetPrimitiveTopology(Topology);
+
+		void SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler);
 
 		template <template<typename> typename BufferType, typename DataType, typename... Args>
 		auto	CreateBuffer(Args&& ... args);
@@ -175,6 +178,13 @@ namespace noctis::rdr
 		m_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
+
+
+	template <typename Derived>
+	void Dx11RenderDevice<Derived>::SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler)
+	{
+		m_pImmediateContext->PSSetSamplers(slot, num, sampler->GetDx11Sampler().GetAddressOf());
+	}
 
 
 

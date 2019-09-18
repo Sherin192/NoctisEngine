@@ -11,10 +11,105 @@ namespace noctis::rdr
 //==================================================================================================
 
 
+
 	class Texture;
 
-	enum TextureType : unsigned int { DIFFUSE = 0, SPECULAR, NORMAL, HEIGHT, COUNT };
+	enum TextureUsage : unsigned int { DIFFUSE = 0, SPECULAR, NORMAL, HEIGHT, COUNT, UNSPECIFIED };
 
+	enum ComparisonFunc
+	{
+		kNever,
+		kLess,
+		kEqual,
+		kLessEqual,
+		kGreater,
+		kNotEqual,
+		kGreaterEqual,
+		kAlways
+	};
+
+
+#define MakeFilterMinMagMip(type)	\
+	struct FilterMin##type {};		\
+	struct FilterMag##type {};		\
+	struct FilterMip##type {}		
+
+#define MakeAddressUVW(type)		\
+	struct AddressU##type {};		\
+	struct AddressV##type{};		\
+	struct AddressW##type{}
+	
+	MakeFilterMinMagMip(Point);
+	MakeFilterMinMagMip(Linear);
+	MakeFilterMinMagMip(Anisotropic);
+	struct FilterPoint : public FilterMinPoint, FilterMagPoint, FilterMipPoint {};
+	struct FilterLinear : public FilterMinLinear, FilterMagLinear, FilterMipLinear {};
+	struct FilterAnisotropic : public FilterMinAnisotropic, FilterMagAnisotropic, FilterMipAnisotropic {};
+
+	MakeAddressUVW(Wrap);
+	MakeAddressUVW(Clamp);
+	MakeAddressUVW(Mirror);
+	MakeAddressUVW(Border);
+	MakeAddressUVW(MirrorOnce);
+
+	struct AddressWrap			{};
+	struct AddressClamp			{};
+	struct AddressMirror		{};
+	struct AddressBorder		{};
+	struct AddressMirrorOnce	{};
+
+	struct CompareNever			{};
+	struct CompareLess			{};
+	struct CompareEqual			{};
+	struct CompareLessEqual		{};
+	struct CompareGreater		{};
+	struct CompareNotEqual		{};
+	struct CompareGreaterEqual	{};
+	struct CompareAlways		{};
+
+	//Supported border colors
+	struct BorderBlackOpaque {};
+	struct BorderBlackTransparent {};
+	struct BorderWhiteOpaque{};
+	struct BorderWhiteTransparent {};
+
+	template <typename... Args>
+	struct SamplerType : public Args... {};
+	
+	using SamplerPointWrapNever			= SamplerType<FilterPoint, AddressWrap, CompareNever>;
+	using SamplerPointWrapLess			= SamplerType<FilterPoint, AddressWrap, CompareLess>;
+	using SamplerPointWrapEqual			= SamplerType<FilterPoint, AddressWrap, CompareEqual>;
+	using SamplerPointWrapLessEqual		= SamplerType<FilterPoint, AddressWrap, CompareLessEqual>;
+	using SamplerPointWrapGreater		= SamplerType<FilterPoint, AddressWrap, CompareGreater>;
+	using SamplerPointWrapNotEqual		= SamplerType<FilterPoint, AddressWrap, CompareNotEqual>;
+	using SamplerPointWrapGreaterEqual	= SamplerType<FilterPoint, AddressWrap, CompareGreaterEqual>;
+	using SamplerPointWrapAlways		= SamplerType<FilterPoint, AddressWrap, CompareAlways>;
+
+	using SamplerPointClampNever		= SamplerType<FilterPoint, AddressClamp, CompareNever>;
+	using SamplerPointClampLess			= SamplerType<FilterPoint, AddressClamp, CompareLess>;
+	using SamplerPointClampEqual		= SamplerType<FilterPoint, AddressClamp, CompareEqual>;
+	using SamplerPointClampLessEqual	= SamplerType<FilterPoint, AddressClamp, CompareLessEqual>;
+	using SamplerPointClampGreater		= SamplerType<FilterPoint, AddressClamp, CompareGreater>;
+	using SamplerPointClampNotEqual		= SamplerType<FilterPoint, AddressClamp, CompareNotEqual>;
+	using SamplerPointClampGreaterEqual	= SamplerType<FilterPoint, AddressClamp, CompareGreaterEqual>;
+	using SamplerPointClampAlways		= SamplerType<FilterPoint, AddressClamp, CompareAlways>;
+
+
+	enum FilterMode
+	{
+		kPoint,
+		kLinear,
+		kAnisotropic
+	};
+
+	enum AddressMode
+	{
+		kWrap,
+		kMMirror,
+		kClamp,
+		kBorder,
+		kMirrorOnce
+	};
 
 	enum Topology
 	{
@@ -129,18 +224,6 @@ namespace noctis::rdr
 	//	kIncr,
 	//	kDecr
 	//};
-
-	enum Comparison
-	{
-		kNever,
-		kLess,
-		kEqual,
-		kLessEqual,
-		kGreater,
-		kNotEqual,
-		kGreaterEqual,
-		kAlways
-	};
 
 
 	//enum DepthWriteMask
