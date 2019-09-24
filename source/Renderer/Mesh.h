@@ -2,7 +2,7 @@
 #define _MESH_H
 
 #include "NoctisRenderDevice.h"
-#include "NoctisConstantBuffer.h"
+#include "NoctisBuffers.h"
 #include "NoctisTexture.h"
 #include "Vertex.h"
 

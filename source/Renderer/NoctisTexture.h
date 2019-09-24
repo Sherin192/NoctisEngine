@@ -1,5 +1,5 @@
-#ifndef _TEXTURE_H
-#define _TEXTURE_H
+#ifndef NOCTIS_TEXTURE_H
+#define NOCTIS_TEXTURE_H
 #include "Core_pch.h"
 #if defined (_WIN32)
 #include "Dx11Texture.h"
@@ -9,6 +9,7 @@
 
 namespace noctis::rdr
 {
+
 	class Texture : public Dx11Texture<Texture>
 	{
 		using Base = Dx11Texture<Texture>;
@@ -28,4 +29,4 @@ namespace noctis::rdr
 		unsigned int											m_nrChannels;
 	};
 }
-#endif //_TEXTURE_H
+#endif //NOCTIS_TEXTURE_H

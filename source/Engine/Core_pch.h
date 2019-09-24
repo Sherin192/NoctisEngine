@@ -24,8 +24,6 @@
 #include <stack>
 #include <queue>
 #include <unordered_map>
-//
-//#include "Renderer/Model.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 //#pragma comment(lib,"user32.lib") 

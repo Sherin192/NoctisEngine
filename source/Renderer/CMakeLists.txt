@@ -5,8 +5,6 @@ add_library(Renderer
     NoctisRenderDevice.cpp
     NoctisRenderDevice.h
     NoctisRenderDevice.cpp
-    NoctisDx11RenderDevice.h
-    NoctisDx11RenderDevice.cpp
     Dx11Utils.h
     InputLayout.h
     Dx11InputLayout.cpp
@@ -23,13 +21,14 @@ add_library(Renderer
     Dx11Texture.h
     NoctisSampler.h
     Dx11Sampler.h
+    Dx11RenderDevice.h
     NoctisShader.h
     NoctisShader.cpp
     Dx11Shader.h
     GLShader.h
     Noctis3DTypes.h
-    NoctisBuffer.h
-    NoctisConstantBuffer.h
+    Dx11Buffer.h
+    NoctisBuffers.h
     ConstantBufferData.h
     ConstantBufferData.cpp
     NoctisPipelinePass.h

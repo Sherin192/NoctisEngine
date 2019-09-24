@@ -1,8 +1,7 @@
 #ifndef INPUT_LAYOUT_H
 #define INPUT_LAYOUT_H
 
-//#include "Core_pch.h"
-#include <cstdint>
+#include "Core_pch.h"
 
 
 class RenderDevice;

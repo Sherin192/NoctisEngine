@@ -1,9 +1,7 @@
 #ifndef NOCTIS_PIPELINE_PASS_H
 #define NOCTIS_PIPELINE_PASS_H
 
-#include "NoctisConstantBuffer.h"
-//#include "Mesh.h"
-//#include "Model.h"
+#include "NoctisBuffers.h"
 #include "NoctisShader.h"
 namespace noctis
 {

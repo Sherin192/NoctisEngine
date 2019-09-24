@@ -1,7 +1,9 @@
 #ifndef NOCTIS_CONSTANT_BUFFER_H
 #define NOCTIS_CONSTANT_BUFFER_H
 //#include "Core_pch.h"
-#include "NoctisBuffer.h"
+#if defined(_WIN32)
+#include "Dx11Buffer.h"
+#endif
 #include "ConstantBufferData.h"
 namespace noctis::rdr {
 
@@ -54,7 +56,6 @@ namespace noctis::rdr {
 			m_stride = other.m_stride;
 			m_offset = other.m_offset;
 		}
-
 
 		void SetStride(const uint32_t stride) { m_stride = stride; }
 		void SetOffset(const uint32_t offset) { m_offset = offset; }

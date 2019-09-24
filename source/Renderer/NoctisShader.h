@@ -1,7 +1,9 @@
 #ifndef NOCTIS_SHADER_H
 #define NOCTIS_SHADER_H
 
+#if defined(_WIN32)
 #include "Dx11Shader.h"
+#endif
 #include "InputLayout.h"
 
 constexpr uint8_t MAX_LAYOUT_ELEMENTS = 5;

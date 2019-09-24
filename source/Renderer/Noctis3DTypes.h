@@ -1,8 +1,6 @@
 #ifndef _NOCTIS_3D_TYPES_H
 #define _NOCTIS_3D_TYPES_H
 
-//#include "Core_pch.h"
-
 namespace noctis::rdr
 {
 //==================================================================================================

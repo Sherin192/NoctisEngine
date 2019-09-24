@@ -1,6 +1,5 @@
 #ifndef NOCTIS_SAMPLER_H
 #define NOCTIS_SAMPLER_H
-//#include "Noctis3DTypes.h"
 #if defined (WIN32)
 #include "Dx11Sampler.h"
 #endif

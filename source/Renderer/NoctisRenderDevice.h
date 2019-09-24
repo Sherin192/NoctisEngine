@@ -1,8 +1,9 @@
 #ifndef _NOCTIS_RENDER_DEVICE_H
 #define _NOCTIS_RENDER_DEVICE_H
 
-#include "NoctisDx11RenderDevice.h"
-
+#if defined(_WIN32)
+#include "Dx11RenderDevice.h"
+#endif
 namespace noctis::rdr
 {
 
@@ -11,34 +12,34 @@ namespace noctis::rdr
 	template <typename DataType>
 	class ConstantBuffer;
 
-	template<typename Derived>
-	class GLRenderDevice
-	{
-	public:
+	//template<typename Derived>
+	//class GLRenderDevice
+	//{
+	//public:
 
-		//============================================================================================
-		// Public Interface:
-		//============================================================================================
-		void Present() {};
+	//	//============================================================================================
+	//	// Public Interface:
+	//	//============================================================================================
+	//	void Present() {};
 
-		void SetRasterizerState(RasterizerType state) {};
+	//	void SetRasterizerState(RasterizerType state) {};
 
-		void ClearRenderTargetView() {};
+	//	void ClearRenderTargetView() {};
 
-		void ClearDepthStencilView(/*TODO pass flags and other arguments*/) {};
+	//	void ClearDepthStencilView(/*TODO pass flags and other arguments*/) {};
 
-		/*template <template<typename> typename BufferType, typename DataType, typename... Args>
-		auto CreateBuffer(Args... args) 
-		{
-			return new BufferType<DataType>(std::forward<Args>(args)...);
-		}*/
+	//	/*template <template<typename> typename BufferType, typename DataType, typename... Args>
+	//	auto CreateBuffer(Args... args) 
+	//	{
+	//		return new BufferType<DataType>(std::forward<Args>(args)...);
+	//	}*/
 
-		template <typename... Args>
-		bool												Init(Args... args /*HWND*/)
-		{
-			return false;
-		}
-	};
+	//	template <typename... Args>
+	//	bool												Init(Args... args /*HWND*/)
+	//	{
+	//		return false;
+	//	}
+	//};
 
 	//TODO: the base class will be selected based on a compile time expression 
 	//A compile time meta function which will return the desired API implementation of RenderDevice
