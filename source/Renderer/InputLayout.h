@@ -4,18 +4,36 @@
 #include "Core_pch.h"
 
 
-class RenderDevice;
-class VertexShader;
-namespace noctis::rdr {
+namespace noctis::rdr 
+{
+//------------------------------------------------------------------------------------
+//		Forward Declarations:
+//------------------------------------------------------------------------------------
+	class RenderDevice;
 	class VertexShader;
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Constants:
+//------------------------------------------------------------------------------------
 
 	constexpr const uint8_t kMaxLayoutElements = 5;
 
 	static constexpr const int16_t autoOffset = -1;
 
-	//==================================================================================================
-	//	VertexElement :	API agnostic representation of an vertex element and it's properties.
-	//==================================================================================================
+//====================================================================================
+
+
+
+
+//------------------------------------------------------------------------------------
+//	VertexElement :	API agnostic representation of an vertex element and it's properties.
+//------------------------------------------------------------------------------------
 	struct VertexElement
 	{
 		enum Format
@@ -48,11 +66,17 @@ namespace noctis::rdr {
 		int16_t offset = autoOffset;
 	};
 
-	//==================================================================================================
-	//	VertexElementLayout :	Abstract base class that represents a vertex layout, API dependent 
-	//							derived classes implement the behaviour.
-	//							The class is only constructible with the Factory method Create.
-	//==================================================================================================
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//	VertexElementLayout :	Abstract base class that represents a vertex layout, API dependent 
+//							derived classes implement the behaviour.
+//							The class is only constructible with the Factory method Create.
+//------------------------------------------------------------------------------------
 	class VertexElementLayout
 	{
 	public:
@@ -79,13 +103,15 @@ namespace noctis::rdr {
 		uint32_t offset;
 	};
 
+//====================================================================================
 
 
 
 
-	//-----------------------------------------------------------------------------
-	// FormatToSize() : Returns the size in bytes for a given format.
-	//-----------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------------
+// FormatToSize() : Returns the size in bytes for a given format.
+//------------------------------------------------------------------------------------
 	constexpr uint16_t FormatToSize(VertexElement& elem)
 	{
 		switch (elem.format)
@@ -116,6 +142,7 @@ namespace noctis::rdr {
 		}
 
 	}
-}
 
+//====================================================================================
+}	//noctis::rdr
 #endif //INPUT_LAYOUT_H

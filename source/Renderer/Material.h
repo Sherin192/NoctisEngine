@@ -1,9 +1,12 @@
 #ifndef _MATERIAL_H
 #define _MATERIAL_H
 #include "NoctisRenderDevice.h"
-//This structure mirrors the GPU representation of a material.
+
 namespace noctis::rdr
 {
+//------------------------------------------------------------------------------------
+//		GPUMaterial: This structure mirrors the GPU representation of a material.
+//------------------------------------------------------------------------------------
 struct GPUMaterial
 {
 	using vec4 = DirectX::SimpleMath::Vector4;
@@ -21,7 +24,15 @@ struct GPUMaterial
 	//-----------------------------------
 };	//										   80 bytes total	
 
+//====================================================================================
 
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Material: 
+//------------------------------------------------------------------------------------
 class Material
 {
 public:
@@ -37,5 +48,7 @@ private:
 	GPUMaterial						m_material;
 
 };
-}
+
+//====================================================================================
+}	//noctis::rdr
 #endif //_MATERIAL_H

@@ -2,9 +2,21 @@
 #include "NoctisRenderDevice.h"
 namespace noctis::rdr
 {
+//------------------------------------------------------------------------------------
+//		Forward Declarations:
+//------------------------------------------------------------------------------------
 	class VertexShader;
 	class PixelShader;
 
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Helper meta functions: Returns the type of the derived shader.
+//------------------------------------------------------------------------------------
 	namespace traits {
 		//Base case
 		template <typename ShaderType> struct Dx11ShaderObject {};
@@ -15,75 +27,154 @@ namespace noctis::rdr
 
 		template <typename ShaderType>
 		using Dx11ShaderObject_t = typename Dx11ShaderObject<ShaderType>::type;
-	}
+	}	//traits
 
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Dx11Shader: Dx11 base class for all types of shaders.
+//------------------------------------------------------------------------------------
 	template <typename ShaderType>
 	class Dx11Shader
 	{
-	public:
+	protected:
+		//C.35: A base class destructor should be either public and virtual, or protected and nonvirtual
+		~Dx11Shader() = default;
+		
 		using ShaderObject = traits::Dx11ShaderObject_t<ShaderType>;
+	public:
 
-		Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring& source)
-			:m_file(source)
-		{
-			Init(renderDevice);
-		}
-		Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source)
-			:m_file(std::move(source))
-		{
-			Init(renderDevice);
-		}
+		Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring& source);
 
-		void Bind(std::shared_ptr<RenderDevice>& renderDevice)
-		{
-			ShaderType* shaderType = static_cast<ShaderType*>(this);
+		Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source);
 
-			HRESULT hResult;
-			if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
-			{
-				renderDevice->GetDeviceContext()->VSSetShader(m_pShaderObject.Get(), 0, 0);
-			}
-			else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
-			{
-				renderDevice->GetDeviceContext()->PSSetShader(m_pShaderObject.Get(), 0, 0);
-			}
-		}
+		void Bind(std::shared_ptr<RenderDevice>& renderDevice);
 
-		[[nodiscard]] auto* GetByteCode() const noexcept { return m_pByteCode.Get(); }
+		[[nodiscard]] auto* GetByteCode() const noexcept;
 	private:
-		void Init(std::shared_ptr<RenderDevice>& renderDevice)
-		{
-			ShaderType* shaderType = static_cast<ShaderType*>(this);
-			HRESULT hResult;
-
-			ID3D10Blob* errorMessages = nullptr;
-			if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
-			{
-				hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", 0, 0, &m_pByteCode, &errorMessages);
-				hResult = renderDevice->GetDevice()->CreateVertexShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
-
-			}
-			else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
-			{
-				hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", 0, 0, &m_pByteCode, &errorMessages);
-				hResult = renderDevice->GetDevice()->CreatePixelShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
-
-			}
-
-			if (FAILED(hResult))
-			{
-				//TODO: LOG fix when proper logging is implemented.
-				std::cerr << "Failed to compile Vertex Shader" << std::endl;
-				char* errorMsg = (char*)errorMessages->GetBufferPointer();
-				std::cerr << errorMsg;
-			}
-
-
-		};
-	private:
+		void Init(std::shared_ptr<RenderDevice>& renderDevice);
+		
 		const std::filesystem::path								m_file;
 
 		Microsoft::WRL::ComPtr<ID3DBlob>						m_pByteCode;
 		Microsoft::WRL::ComPtr<ShaderObject>					m_pShaderObject;
 	};
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Dx11Shader Constructor:
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	Dx11Shader<ShaderType>::Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring& source)
+		:m_file(source)
+	{
+		Init(renderDevice);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Dx11Shader Constructor:
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	Dx11Shader<ShaderType>::Dx11Shader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source)
+		:m_file(std::move(source))
+	{
+		Init(renderDevice);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Bind: Binds the shader based on the type of the derived class.
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	void Dx11Shader<ShaderType>::Bind(std::shared_ptr<RenderDevice>& renderDevice)
+	{
+		ShaderType* shaderType = static_cast<ShaderType*>(this);
+
+		HRESULT hResult;
+		if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->VSSetShader(m_pShaderObject.Get(), 0, 0);
+		}
+		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->PSSetShader(m_pShaderObject.Get(), 0, 0);
+		}
+	}
+
+//====================================================================================
+	
+	
+	
+	
+	
+//------------------------------------------------------------------------------------
+//		GetByteCode: Returns the byte code for the shader.
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	[[nodiscard]] auto* Dx11Shader<ShaderType>::GetByteCode() const noexcept 
+	{ 
+		return m_pByteCode.Get(); 
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Init: Initializes the shader based on the type of derived class.
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	void Dx11Shader<ShaderType>::Init(std::shared_ptr<RenderDevice>& renderDevice)
+	{
+		ShaderType* shaderType = static_cast<ShaderType*>(this);
+		HRESULT hResult;
+
+		ID3D10Blob* errorMessages = nullptr;
+		if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", 0, 0, &m_pByteCode, &errorMessages);
+			hResult = renderDevice->GetDevice()->CreateVertexShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
+
+		}
+		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", 0, 0, &m_pByteCode, &errorMessages);
+			hResult = renderDevice->GetDevice()->CreatePixelShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
+
+		}
+
+		if (FAILED(hResult))
+		{
+			//TODO: LOG fix when proper logging is implemented.
+			std::cerr << "Failed to compile Vertex Shader" << std::endl;
+			char* errorMsg = (char*)errorMessages->GetBufferPointer();
+			std::cerr << errorMsg;
+		}
+
+
+	};
+
+//====================================================================================
 }

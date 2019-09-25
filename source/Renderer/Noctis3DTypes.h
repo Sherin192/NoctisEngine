@@ -1,6 +1,8 @@
 #ifndef _NOCTIS_3D_TYPES_H
 #define _NOCTIS_3D_TYPES_H
 
+#define BIT(x) 1 << x
+
 namespace noctis::rdr
 {
 //==================================================================================================
@@ -264,7 +266,11 @@ namespace noctis::rdr
 		kDynamicConstantBuffer
 	};*/
 
-
+	enum ClearTargetType : uint8_t {
+		kDepth = BIT(0),
+		kStencil = BIT(1),
+		kRender = BIT(2)
+	};
 	enum ConstantBufferType {kStatic, kDynamic};
 }
 #endif //_NOCTIS_3D_TYPES_H

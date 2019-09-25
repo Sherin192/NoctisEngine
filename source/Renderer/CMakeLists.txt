@@ -19,9 +19,11 @@ add_library(Renderer
     NoctisTexture.h
     NoctisTexture.cpp
     Dx11Texture.h
+    Dx11Texture.cpp
     NoctisSampler.h
     Dx11Sampler.h
     Dx11RenderDevice.h
+    Dx11RenderDevice.cpp
     NoctisShader.h
     NoctisShader.cpp
     Dx11Shader.h

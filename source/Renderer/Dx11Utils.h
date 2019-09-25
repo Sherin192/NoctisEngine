@@ -3,7 +3,6 @@
 
 //#include "Core_pch.h"
 
-#define BIT(x) 1 << x
 
 
 

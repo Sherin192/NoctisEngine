@@ -5,13 +5,26 @@
 
 namespace noctis::rdr
 {
+//------------------------------------------------------------------------------------
+//		Forward Declarations:
+//------------------------------------------------------------------------------------
 	class RenderDevice;
 
+//====================================================================================
+
+	//TODO: Moved this as it is generic 
 	template <typename Derived, typename... Bases>
 	struct is_derived_from : std::bool_constant<(std::is_base_of_v<Bases, Derived>&& ...)> {};
 	template <typename Derived, typename... Bases>
 	constexpr bool is_derived_from_v = is_derived_from<Derived, Bases...>::value;
 
+
+
+
+
+//------------------------------------------------------------------------------------
+//		NoctisToAPISampler: Helper convertin function. 
+//------------------------------------------------------------------------------------
 	template <typename... Args>
 	constexpr auto NoctisToAPISampler(SamplerType<Args...> type)
 	{
@@ -76,9 +89,21 @@ namespace noctis::rdr
 		return samplerDesc;
 	}
 
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Dx11Sampler: Dx11 implementation of Sampler
+//------------------------------------------------------------------------------------
 	template <typename Derived>
 	class Dx11Sampler
 	{
+	protected:
+		//C.35: A base class destructor should be either public and virtual, or protected and nonvirtual
+		~Dx11Sampler() = default;
 	public:
 		Dx11Sampler(std::shared_ptr<RenderDevice>& renderDevice, D3D11_SAMPLER_DESC desc) : m_desc(desc)
 		{
@@ -87,13 +112,13 @@ namespace noctis::rdr
 		}
 
 		auto& GetDx11Sampler() { return m_pSampler; }
-		//Just a test
-		//auto GetSamplerDesc() { return Dx11ToNoctisSampler; }
+	
 	private:
 		D3D11_SAMPLER_DESC m_desc;
 		Microsoft::WRL::ComPtr<ID3D11SamplerState>				m_pSampler;
 	};
 
+//====================================================================================
 }
 
 #endif //DX11_SAMPLER_H

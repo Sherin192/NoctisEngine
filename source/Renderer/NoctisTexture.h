@@ -10,11 +10,9 @@
 namespace noctis::rdr
 {
 
-	class Texture : public Dx11Texture<Texture>
+	class Texture : public Dx11Texture
 	{
-		using Base = Dx11Texture<Texture>;
-
-		Base& GetImpl() { return static_cast<Base&>(*this); }
+		using Base = Dx11Texture;
 	public:
 		Texture();
 		Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::string path, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type);

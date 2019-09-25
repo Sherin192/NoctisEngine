@@ -46,9 +46,9 @@ namespace rdr{
 		//Experimental
 		std::shared_ptr<rdr::Model>				m_pSponza;
 		
-		noctis::rdr::ConstantBuffer<rdr::CBFrameData>*		m_constantPerFrame;
-		noctis::rdr::ConstantBuffer<rdr::CBModelData>*		m_constantPerObject;
-		noctis::rdr::PipelinePass*							m_pipelinePass;
+		std::unique_ptr<noctis::rdr::ConstantBuffer<rdr::CBFrameData>>		m_pConstantPerFrame;
+		std::unique_ptr<noctis::rdr::ConstantBuffer<rdr::CBModelData>>		m_pConstantPerObject;
+		std::unique_ptr<noctis::rdr::PipelinePass>							m_pPipelinePass;
 		std::shared_ptr<rdr::VertexShader>		m_pVShader;
 		std::shared_ptr<rdr::PixelShader>		m_pPShader;
 	};

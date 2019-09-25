@@ -6,12 +6,29 @@
 #include "NoctisTexture.h"
 #include "Vertex.h"
 
+//------------------------------------------------------------------------------------
+//		Forward Declarations:
+//------------------------------------------------------------------------------------
+namespace noctis
+{
+	class AssetImporterImpl;
+	namespace rdr
+	{ 
+		class Shader;
+		class Material;
+	}
+}
+//====================================================================================
 
-class AssetImporterImpl;
-namespace noctis::rdr {
-	class Shader;
-	class Material;
 
+
+
+
+namespace noctis::rdr 
+{
+//------------------------------------------------------------------------------------
+//		Mesh:
+//------------------------------------------------------------------------------------
 	class Mesh
 	{
 	public:
@@ -25,16 +42,16 @@ namespace noctis::rdr {
 		Mesh(Mesh&& other) noexcept;
 
 		void										Render(std::shared_ptr<RenderDevice>& renderDevice);
-		VertexBuffer<Vertex>& GetVertexBuffer() noexcept { return m_vertexBuffer; }
-		IndexBuffer<>& GetIndexBuffer() noexcept { return m_indexBuffer; }
+		VertexBuffer<Vertex>&						GetVertexBuffer() noexcept { return m_vertexBuffer; }
+		IndexBuffer<>&								GetIndexBuffer() noexcept { return m_indexBuffer; }
 
 		size_t										GetVertexCount()  const noexcept { return m_vertices.size(); }
 		size_t										GetIndexCount()	const noexcept { return m_indices.size(); }
-		const std::string& GetName() const noexcept { return m_name; }
-		Material& GetMaterial() noexcept { return m_material; }
+		const std::string&							GetName() const noexcept { return m_name; }
+		Material&									GetMaterial() noexcept { return m_material; }
 		void										SetMaterial(Material mat) noexcept;
 		void										SetTexture(std::shared_ptr<Texture>& tex);
-		const TextureArray& GetTextures() const noexcept { return m_textures; }
+		const TextureArray&							GetTextures() const noexcept { return m_textures; }
 	private:
 		void										Setup(std::shared_ptr<RenderDevice>& renderDevice);
 
@@ -49,6 +66,8 @@ namespace noctis::rdr {
 
 		friend class AssetImporterImpl;
 	};
-}
+	
+//====================================================================================
+}	//noctis::rdr
 #endif //_MESH_H
 

@@ -25,7 +25,7 @@ namespace noctis
 	//-----------------------------------------------------------------------------
 	bool ExampleDx11App::Init()
 	{
-		m_pipelinePass = new PipelinePass(m_pRenderDevice);
+		m_pPipelinePass.reset(new PipelinePass(m_pRenderDevice));
 		
 		AssetImporter::Instance(m_pRenderDevice);
 
@@ -40,7 +40,7 @@ namespace noctis
 			{VertexElement::kTexCoord, 0, VertexElement::kFloat2}
 			});
 
-		m_pipelinePass->AddShaders(m_pVShader, m_pPShader);
+		m_pPipelinePass->AddShaders(m_pVShader, m_pPShader);
 
 		m_camera = std::make_unique<Camera>(Vector3(15.0f, 5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 		m_camera->InitProjMatrix(0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
@@ -115,9 +115,9 @@ namespace noctis
 			cbFrameData.pointLights[i] = pointLight;
 		}
 		static_assert(sizeof(CBFrameData) % 16 == 0);
-		m_constantPerFrame = m_pRenderDevice->CreateBuffer<rdr::ConstantBuffer, CBFrameData>(true, &cbFrameData);
+		m_pConstantPerFrame.reset(m_pRenderDevice->CreateBuffer<rdr::ConstantBuffer, CBFrameData>(true, &cbFrameData));
 
-		m_pipelinePass->BindConstantBuffers(m_pRenderDevice, m_constantPerFrame);
+		m_pPipelinePass->BindConstantBuffers(m_pRenderDevice, m_pConstantPerFrame.get());
 
 		return true;
 	}
@@ -137,19 +137,18 @@ namespace noctis
 
 	void ExampleDx11App::Render(float dt)
 	{
-		m_pRenderDevice->ClearRenderTargetView();
-		m_pRenderDevice->ClearDepthStencilView();
+		m_pRenderDevice->Clear(kRender | kDepth);
 
 		// Update Frame CB - 2 ways
 		cbFrameData.eyePos = m_camera->GetPosition();
-		m_constantPerFrame->Update(m_pRenderDevice, cbFrameData);
-		m_constantPerFrame->Bind(m_pRenderDevice, 1);
+		m_pConstantPerFrame->Update(m_pRenderDevice, cbFrameData);
+		m_pConstantPerFrame->Bind(m_pRenderDevice, 1);
 		//-----------------------------------------------------
 
 		//TODO:CHeck why Frame cb is at index 1, consider using index 0?
-		m_pipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
-		m_pipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
-		m_pipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
+		m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
+		m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
+		m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
 #if _DEBUG && 0
 		for (int i = 0; i < 8; ++i)
 		{
@@ -161,7 +160,7 @@ namespace noctis
 		RenderToImGui();
 #endif //NOCTIC_USE_IMGUI
 		//_______________________________________________________________________________________________
-		m_pRenderDevice->GetSwapChain()->Present(0, 0);
+		m_pRenderDevice->Present();
 
 	}
 

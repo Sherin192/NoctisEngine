@@ -21,9 +21,6 @@ namespace noctis::rdr
 
 
 
-
-
-
 //------------------------------------------------------------------------------------
 //		Dx11 Base Class for Buffers:
 //------------------------------------------------------------------------------------
@@ -31,6 +28,9 @@ namespace noctis::rdr
 	template <typename BufferType, typename DataType>
 	class Dx11Buffer
 	{
+	protected:
+		//C.35: A base class destructor should be either public and virtual, or protected and nonvirtual
+		~Dx11Buffer() = default;
 	public:
 		using value_type = DataType;
 
