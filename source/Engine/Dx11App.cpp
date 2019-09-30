@@ -4,10 +4,9 @@
 #include "Window.h"
 #include "Renderer/NoctisRenderDevice.h"
 
-
 #if NOCTIS_USE_IMGUI 
-#include "../Dependencies/imgui/imgui_impl_win32.h"
-#include "../Dependencies/imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
 #endif //NOCTIS_USE_IMGUI
 
 namespace noctis
@@ -32,30 +31,14 @@ namespace noctis
 	{
 		m_pRenderDevice = std::make_shared<rdr::RenderDevice>();
 		if (m_pRenderDevice->Init(m_pWindow->GetHandle(), m_pWindow->GetWidth(), m_pWindow->GetHeight()))
-			return true;
-		return false;
-
+		{
 //		if (InitDirect3D())
 //		{
-//#if NOCTIS_USE_IMGUI
-//			InitImGui();
-//#endif //NOCTIS_USE_IMGUI
-//			return true;
-//		}
-//		return false;
-	}
-
-
-
-
-
-	//-----------------------------------------------------------------------------
-	// InitDirect3D() : Initialize direct3D.
-	//-----------------------------------------------------------------------------
-	bool Dx11App::InitDirect3D()
-	{
-		/*if (m_pRenderDevice = std::make_shared<noctis::rdr::RenderDevice>(m_pWindow->GetHandle(), m_pWindow->GetWidth(), m_pWindow->GetHeight()))
-			return true;*/
+#if NOCTIS_USE_IMGUI
+			InitImGui();
+#endif //NOCTIS_USE_IMGUI
+			return true;
+		}
 		return false;
 	}
 
@@ -134,7 +117,7 @@ namespace noctis
 		ImGui::StyleColorsDark();
 
 		ImGui_ImplWin32_Init(m_pWindow->GetHandle());
-		ImGui_ImplDX11_Init(m_pRenderDevice->GetDevice().Get(), m_pRenderDevice->GetDeviceContext().Get());
+		ImGui_ImplDX11_Init(m_pRenderDevice->GetDevice(), m_pRenderDevice->GetDeviceContext());
 	}
 
 

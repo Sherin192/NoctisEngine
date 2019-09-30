@@ -1,6 +1,5 @@
 #ifndef DX11CUBE_APP_H
 #define DX11CUBE_APP_H	
-#include "Core_pch.h"
 #include "Dx11App.h"
 #include "Renderer/ConstantBufferData.h"
 
@@ -30,9 +29,9 @@ namespace rdr{
 		void								OnKeyPressed() override;
 
 	protected:
-#if NOCTIC_USE_IMGUI
+#if NOCTIS_USE_IMGUI
 		void								RenderImGuiFrame() override;
-#endif //NOCTIC_USE_IMGUI
+#endif //NOCTIS_USE_IMGUI
 	private:
 
 		std::unique_ptr<rdr::Model>				m_pSkull;

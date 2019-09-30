@@ -1,10 +1,10 @@
 #include "Window.h"
 
+#if NOCTIS_USE_IMGUI
+	extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif //NOCTIS_USE_IMGUI
 namespace noctis
 {
-#if NOCTIC_USE_IMGUI
-	extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-#endif //NOCTIC_USE_IMGUI
 
 	LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -13,8 +13,8 @@ namespace noctis
 		m_title("Dx11App"),
 		m_wndStyle(WS_OVERLAPPEDWINDOW)
 	{
-		m_width = 800;
-		m_height = 600;
+		m_width = 1440;
+		m_height = 900;
 
 		if (!Init())
 		{
@@ -133,10 +133,10 @@ namespace noctis
 	//-----------------------------------------------------------------------------
 	LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-#if NOCTIC_USE_IMGUI
+#if NOCTIS_USE_IMGUI
 		if (!Window::IsMouseLocked() && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
 			return true;
-#endif //NOCTIC_USE_IMGUI
+#endif //NOCTIS_USE_IMGUI
 		switch (msg)
 		{
 		case WM_DESTROY:

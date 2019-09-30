@@ -1,4 +1,3 @@
-#pragma once
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 
 #define _USE_MATH_DEFINES
@@ -28,4 +27,4 @@
 #pragma comment(lib,"d3dcompiler.lib")
 //#pragma comment(lib,"user32.lib") 
 
-#define NOCTIS_USE_IMGUI 0
+#define NOCTIS_USE_IMGUI 1

@@ -95,7 +95,7 @@ namespace noctis::rdr
 	{
 		using Microsoft::WRL::ComPtr;
 		UINT createDeviceFlags = 0;
-
+		m_windowHandle = hwnd;
 #ifdef _DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -229,40 +229,4 @@ namespace noctis::rdr
 
 	}
 
-
-
-
-
-
-#if NOCTIS_USE_IMGUI
-	void Dx11RenderDevice::InitImGui()
-	{
-		//Setup imgui
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-
-		ImGui::StyleColorsDark();
-
-		ImGui_ImplWin32_Init(m_pWindow->GetHandle());
-		ImGui_ImplDX11_Init(m_pRenderDevice->GetDevice().Get(), m_pRenderDevice->GetDeviceContext().Get());
-	}
-
-
-
-
-
-
-	void Dx11RenderDevice::RenderToImGui()
-	{
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-
-		RenderImGuiFrame();
-		ImGui::Render();
-
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	}
-#endif //NOCTIS_USE_IMGUI
 } //noctis::rdr

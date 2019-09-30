@@ -1,7 +1,11 @@
 #ifndef DX11APP_H
 #define DX11APP_H	
 #include "App.h"
+#include "Core_pch.h"
 
+#if NOCTIS_USE_IMGUI 
+#include "imgui/imgui.h"
+#endif //NOCTIS_USE_IMGUI 
 namespace noctis
 {
 	class Dx11App : public App
@@ -25,14 +29,12 @@ namespace noctis
 	private:
 		void								ProcessMouseInput();
 		void								ProcessKeyboardInput();
-		bool								InitDirect3D();
 
 #if NOCTIS_USE_IMGUI
-		virtual void						InitImGui() override;
-
 	protected:
-		virtual void						RenderToImGui() override;
-		virtual void						RenderImGuiFrame() {};
+		void						InitImGui() override;
+		void						RenderToImGui() override;
+		void						RenderImGuiFrame() override {};
 #endif //NOCTIS_USE_IMGUI
 };
 }

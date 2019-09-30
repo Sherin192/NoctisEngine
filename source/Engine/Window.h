@@ -1,6 +1,6 @@
 #ifndef _WINDOW_H
 #define _WINDOW_H
-
+#include "Core_pch.h"
 #include <windows.h>
 #include "DirectXTK/Inc/Keyboard.h"
 #include "DirectXTK/Inc/Mouse.h"

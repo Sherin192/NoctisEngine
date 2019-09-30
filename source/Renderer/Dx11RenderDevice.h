@@ -86,14 +86,14 @@ namespace noctis::rdr
 	private:
 		auto InitDepthStencilDescs(unsigned width, unsigned height);
 
-#if NOCTIS_USE_IMGUI
-		//-----------------------------------------------------------------------------
-		// DxApp::InitImGui() : Initialisation of ImGui.
-		//-----------------------------------------------------------------------------
-		void InitImGui();
-
-		void RenderToImGui();
-#endif //NOCTIS_USE_IMGUI
+//#if NOCTIS_USE_IMGUI
+//		//-----------------------------------------------------------------------------
+//		// DxApp::InitImGui() : Initialisation of ImGui.
+//		//-----------------------------------------------------------------------------
+//		void InitImGui();
+//
+//		void RenderToImGui();
+//#endif //NOCTIS_USE_IMGUI
 		//void												CreateRasterizationState();
 		//void												InitDepthStencilBuffer();
 
@@ -120,6 +120,7 @@ namespace noctis::rdr
 		bool												m_bEnable4xMsaa;
 		unsigned int										m_windowWidth;
 		unsigned int										m_windowHeight;
+		HWND												m_windowHandle;
 	};
 }	//noctis::rdr
 #endif _NOCTIS_DX11RENDER_DEVICE_H

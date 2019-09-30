@@ -145,18 +145,17 @@ namespace noctis
 		m_pConstantPerFrame->Bind(m_pRenderDevice, 1);
 		//-----------------------------------------------------
 
-		//TODO:CHeck why Frame cb is at index 1, consider using index 0?
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
 #if _DEBUG && 0
 		for (int i = 0; i < 8; ++i)
 		{
-			if (CBFrameData.pointLights[i].enabled)
-				CBFrameData.pointLights[i].Render(m_pRenderDevice, *m_pLightShader, *m_camera);
+			if (cbFrameData.pointLights[i].enabled)
+				cbFrameData.pointLights[i].Render(m_pRenderDevice, *m_pLightShader, *m_camera);
 		}
 #endif //_DEBUG
-#if NOCTIC_USE_IMGUI
+#if NOCTIS_USE_IMGUI
 		RenderToImGui();
 #endif //NOCTIC_USE_IMGUI
 		//_______________________________________________________________________________________________
@@ -168,7 +167,7 @@ namespace noctis
 
 
 
-#if NOCTIC_USE_IMGUI
+#if NOCTIS_USE_IMGUI
 	//-----------------------------------------------------------------------------
 	// ExampleDx11App::RenderToImGui() : Place here all that has to be rendered by ImGui.
 	//-----------------------------------------------------------------------------
@@ -186,7 +185,7 @@ namespace noctis
 		ImGui::SliderFloat("PL1.pow", &crateMat.GetGPUMaterial().specular.w, 0.0f, 1000.0f);
 		//ImGui::SliderFloat3("PL1diffuse", &CBFrameData.pointLights[0].diffuse.x, 0.0f, 10.0f);
 
-		ImGui::SliderFloat3("PL1ambient", &CBFrameData.pointLights[0].position.x, 0.0f, 100.0f);
+		ImGui::SliderFloat3("PL1ambient", &cbFrameData.pointLights[0].position.x, 0.0f, 1000.0f);
 		//ImGui::SliderFloat3("PL1specular", &CBFrameData.pointLights[0].specular.x, 0.0f, 10.0f);
 
 
@@ -194,7 +193,7 @@ namespace noctis
 		ImGui::End();
 
 	}
-#endif //NOCTIC_USE_IMGUI
+#endif //NOCTIS_USE_IMGUI
 
 
 
@@ -229,7 +228,7 @@ namespace noctis
 
 		if (kb.Escape)
 			PostQuitMessage(0);
-		const float camVelocity = 25.0f;
+		const float camVelocity = 50.0f;
 		const XMVECTOR camPos = m_camera->GetPosition();
 		if (kb.Up || kb.W)
 			m_camera->Move({ 0.0f, 0.0f, camVelocity * dt });
