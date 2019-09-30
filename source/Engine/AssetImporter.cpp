@@ -181,8 +181,8 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 		vector.x = mesh->mBitangents[i].x;
 		vector.y = mesh->mBitangents[i].y;
 		vector.z = mesh->mBitangents[i].z;
-		//vertex.biTangent = vector;
-
+		vertex.bitangent = vector;
+		
 		vertices.push_back(vertex);
 
 	}

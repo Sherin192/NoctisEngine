@@ -152,15 +152,20 @@ namespace noctis::rdr
 		HRESULT hResult;
 
 		ID3D10Blob* errorMessages = nullptr;
+		UINT flags = 0;
+#if defined(_DEBUG)
+		flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif //_DEBUG
+
 		if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
 		{
-			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", 0, 0, &m_pByteCode, &errorMessages);
+			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", flags, 0, &m_pByteCode, &errorMessages);
 			hResult = renderDevice->GetDevice()->CreateVertexShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 
 		}
 		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
 		{
-			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", 0, 0, &m_pByteCode, &errorMessages);
+			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", flags, 0, &m_pByteCode, &errorMessages);
 			hResult = renderDevice->GetDevice()->CreatePixelShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 
 		}
