@@ -41,20 +41,13 @@ namespace noctis
 			});
 
 		m_pPipelinePass->AddShaders(m_pVShader, m_pPShader);
-
-		m_camera = std::make_unique<Camera>(Vector3(15.0f, 5.0f, 0.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
-		m_camera->InitProjMatrix(0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
+		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 5.0f, 0.0f), 0.0f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
 
 		//-------------------------------------------------------------------------------------------------------------------------------
 		m_pSkull = std::make_unique<Model>(m_pRenderDevice, sg::Shape::SKULL);
 
-		const DirectX::XMVECTOR rotaxis = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-		const DirectX::XMMATRIX Rotation = DirectX::XMMatrixRotationAxis(rotaxis, 1.0f);
-		const DirectX::XMMATRIX Translation = DirectX::XMMatrixTranslation(0.0f, 20.0f, 0.0f);
-		const DirectX::XMMATRIX Scale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-		Transform transform;
-		transform.Set(Rotation, Translation, Scale);
-		m_pSkull->SetTransform(transform);
+		Transform skullTransform({ 0.0f, 20.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		m_pSkull->SetTransform(skullTransform);
 		//--------------------------------------------------------------------------------------------------------------------------------------
 		//TODO:Refactor the shape generator so this is done automaticaly when we pass it the textures paths
 		//Create a model
@@ -70,24 +63,15 @@ namespace noctis
 		m_pCrate->SetTexture(crateSpecular, TextureUsage::SPECULAR, sg::kShapeNameCube);
 		m_pCrate->SetTexture(crateNormal, TextureUsage::NORMAL, sg::kShapeNameCube);
 
-		//Create the transform for the model
-		//TODO:Create the model with a default transform of  position (0,0,0), rotation (0,0,0), scale (1,1,1).
-		const DirectX::XMMATRIX crateRotation = DirectX::XMMatrixRotationAxis(rotaxis, 0.0f);
-		const DirectX::XMMATRIX cratePosition = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-		const DirectX::XMMATRIX crateScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-		transform.Set(crateRotation, cratePosition, crateScale);
+		Transform crateTransform({ 30.0f, 20.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		m_pCrate->SetTransform(crateTransform);
 
-		m_pCrate->SetTransform(transform);
 		//_______________________________NANO_EXPERIMENT________________________________________________________
 
 		//TODO:Give the model the default transform.
 		m_pSponza = AssetImporter::Instance(m_pRenderDevice).LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
-
-		const DirectX::XMMATRIX sponzaRotation = DirectX::XMMatrixRotationAxis(rotaxis, 0.0f);
-		const DirectX::XMMATRIX sponzaPosition = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-		const DirectX::XMMATRIX sponzaScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-
-		m_pSponza->GetTransform().Set(sponzaRotation, sponzaPosition, sponzaScale);
+		Transform sponzaTransform({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		m_pSponza->SetTransform(sponzaTransform);
 		//______________________________________________________________________________________________________
 		DirectionalLight dirLight;
 		dirLight.ambient = { 0.03f, 0.024f, 0.014f, 1.0f };
@@ -148,11 +132,11 @@ namespace noctis
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
-#if _DEBUG && 0
+#if _DEBUG
 		for (int i = 0; i < 8; ++i)
 		{
 			if (cbFrameData.pointLights[i].enabled)
-				cbFrameData.pointLights[i].Render(m_pRenderDevice, *m_pLightShader, *m_camera);
+				cbFrameData.pointLights[i].Render(m_pRenderDevice, m_pPipelinePass.get(), *m_camera);
 		}
 #endif //_DEBUG
 #if NOCTIS_USE_IMGUI
@@ -179,8 +163,6 @@ namespace noctis
 			ImGui::SliderFloat3("PL1.diffuse", &CBFrameData.dirLight.diffuse.x, 0.0f, 1.0f);
 			ImGui::SliderFloat3("PL1.specular", &CBFrameData.dirLight.specular.x, 0.0f, 1.0f);*/
 		Material& crateMat = m_pCrate->GetMaterial(sg::kShapeNameCube);
-
-
 
 		ImGui::SliderFloat("PL1.pow", &crateMat.GetGPUMaterial().specular.w, 0.0f, 1000.0f);
 		//ImGui::SliderFloat3("PL1diffuse", &CBFrameData.pointLights[0].diffuse.x, 0.0f, 10.0f);
@@ -229,7 +211,7 @@ namespace noctis
 		if (kb.Escape)
 			PostQuitMessage(0);
 		const float camVelocity = 50.0f;
-		const XMVECTOR camPos = m_camera->GetPosition();
+		//const XMVECTOR camPos = m_camera->GetPosition();
 		if (kb.Up || kb.W)
 			m_camera->Move({ 0.0f, 0.0f, camVelocity * dt });
 
@@ -237,10 +219,19 @@ namespace noctis
 			m_camera->Move({ 0.0f, 0.0f, -camVelocity * dt });
 
 		if (kb.Left || kb.A)
-			m_camera->Move({ -camVelocity * dt, 0.0f, 0.0f });
+			m_camera->Move({ camVelocity * dt, 0.0f, 0.0f });
 
 		if (kb.Right || kb.D)
-			m_camera->Move({ camVelocity * dt, 0.0f, 0.0f });
+			m_camera->Move({ -camVelocity * dt, 0.0f, 0.0f });
+		if (kb.Q)
+			m_camera->Rotate({ -1.0f, 0.0f });
+		if (kb.E)
+			m_camera->Rotate({ 1.0f, 0.0f });
+		if (kb.R)
+			m_camera->Rotate({ 0.0f, -1.0f });
+		if (kb.T)
+			m_camera->Rotate({ 0.0f, 1.0f });
+
 
 	}
 }

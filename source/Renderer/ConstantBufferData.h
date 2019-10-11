@@ -1,6 +1,5 @@
 #ifndef CONSTANT_BUFFER_DATA_H
 #define CONSTANT_BUFFER_DATA_H
-
 #include "Material.h"
 #include "Light.h"
 
@@ -22,15 +21,15 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 	struct CBModelData
 	{
-		DirectX::XMFLOAT4X4 world;
-		DirectX::XMFLOAT4X4 worldInvTranspose;
-		DirectX::XMFLOAT4X4 worldViewProj;
+		math::Nmat4	world;
+		math::Nmat4 worldInvTranspose;
+		math::Nmat4	worldViewProj;
+
 		GPUMaterial material;
 	
 		CBModelData() = default;
-		CBModelData(DirectX::FXMMATRIX w, DirectX::CXMMATRIX v, DirectX::XMMATRIX p, Material& mat);
-		CBModelData(DirectX::FXMMATRIX w, DirectX::CXMMATRIX wvp);
-	
+		CBModelData(math::Nmat4 w, math::Nmat4 v, math::Nmat4 p, Material& mat);
+		CBModelData(math::Nmat4 w, math::Nmat4 wvp);
 	};
 
 //====================================================================================
@@ -46,7 +45,7 @@ namespace noctis::rdr
 	{
 		DirectionalLight dirLight;
 		PointLight pointLights[8];
-		DirectX::SimpleMath::Vector3 eyePos;
+		math::Nvec3 eyePos;
 		float pad;
 	};
 

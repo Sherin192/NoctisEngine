@@ -14,13 +14,13 @@ namespace noctis::rdr
 {
 
 	Model::Model(std::shared_ptr<RenderDevice>& renderDevice, sg::Shape shape)
-		: m_cbuffer(renderDevice)
+		: m_cbuffer(renderDevice), m_transform(), m_meshes()
 	{
 		Generate(renderDevice, shape);
 	}
 
 	Model::Model(std::shared_ptr<RenderDevice>& renderDevice, std::string_view path)
-		: m_cbuffer(renderDevice)
+		: m_cbuffer(renderDevice), m_transform(), m_meshes()
 
 	{
 	}
@@ -28,16 +28,14 @@ namespace noctis::rdr
 
 	Transform& Model::GetTransform() noexcept { return m_transform; }
 	const Transform& Model::GetTransform() const noexcept { return m_transform; }
-	void				Model::SetTransform(Transform& t) noexcept { m_transform.Set(t); }
+	void Model::SetTransform(Transform& t) noexcept { m_transform.Set(t); }
 
 
 
 	void Model::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 	{
-		DirectX::XMMATRIX WVP = XMMatrixMultiply(m_transform.matrix, XMMatrixMultiply(cam.GetView(), cam.GetProj()));
-
-		CBModelData cbData(m_transform.matrix, WVP);
-
+		math::Nmat4 WVP = cam.GetProj() * cam.GetView() * m_transform.AsMatrix();
+		CBModelData cbData(m_transform.AsMatrix(), WVP);
 		//renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
 
 		//renderDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

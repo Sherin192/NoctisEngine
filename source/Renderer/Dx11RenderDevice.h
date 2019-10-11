@@ -11,6 +11,7 @@
 #include "DirectXTK/Inc/SimpleMath.h"
 #include "Noctis3DTypes.h"
 #include "NoctisSampler.h"
+#include "Math/NoctisMath.h"
 
 #if _DEBUG
 #define HR(x) do { if (FAILED(x))	\
@@ -86,14 +87,6 @@ namespace noctis::rdr
 	private:
 		auto InitDepthStencilDescs(unsigned width, unsigned height);
 
-//#if NOCTIS_USE_IMGUI
-//		//-----------------------------------------------------------------------------
-//		// DxApp::InitImGui() : Initialisation of ImGui.
-//		//-----------------------------------------------------------------------------
-//		void InitImGui();
-//
-//		void RenderToImGui();
-//#endif //NOCTIS_USE_IMGUI
 		//void												CreateRasterizationState();
 		//void												InitDepthStencilBuffer();
 

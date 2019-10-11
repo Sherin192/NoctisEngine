@@ -1,38 +1,37 @@
 #include "Core_pch.h"
 #include "ConstantBufferData.h"
 #include "DX11Utils.h"
-
 namespace noctis::rdr
 {
+	using namespace math;
 //------------------------------------------------------------------------------------
 //		CBModelData Constructor: 
 //------------------------------------------------------------------------------------
-	CBModelData::CBModelData(DirectX::FXMMATRIX w, DirectX::CXMMATRIX v, DirectX::XMMATRIX p, Material& mat)
+	CBModelData::CBModelData(Nmat4 w, Nmat4 v, Nmat4 p, Material& mat)
 	{
-		DirectX::XMStoreFloat4x4(&world, w);
-		DirectX::XMStoreFloat4x4(&worldViewProj, DirectX::XMMatrixTranspose(XMMatrixMultiply(w, XMMatrixMultiply(v, p))));
-		DirectX::XMStoreFloat4x4(&worldInvTranspose, InverseTranspose(w));
-	
+		world = w;
+		worldViewProj = w * v * p;
+		worldInvTranspose = math::inverseTranspose(w);
 		memset(&material, 0, sizeof(GPUMaterial));
 		material = mat.GetGPUMaterial();
 	}
 
-//====================================================================================
+	//====================================================================================
 
 
 
 
 
-//------------------------------------------------------------------------------------
-//		CBModelData Constructor: 
-//------------------------------------------------------------------------------------
-	CBModelData::CBModelData(DirectX::FXMMATRIX w, DirectX::CXMMATRIX wvp)
+	//------------------------------------------------------------------------------------
+	//		CBModelData Constructor: 
+	//------------------------------------------------------------------------------------
+	CBModelData::CBModelData(Nmat4 w, Nmat4 wvp)
 	{
-		DirectX::XMStoreFloat4x4(&world, w);
-		DirectX::XMStoreFloat4x4(&worldViewProj, DirectX::XMMatrixTranspose(wvp));
-		DirectX::XMStoreFloat4x4(&worldInvTranspose, InverseTranspose(w));
+		world = w;
+		worldViewProj = wvp;
+		worldInvTranspose = math::inverseTranspose(w);
 		memset(&material, 0, sizeof(GPUMaterial));
 	}
 
-//====================================================================================
+	//====================================================================================
 }	//noctis::rdr

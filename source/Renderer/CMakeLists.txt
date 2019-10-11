@@ -42,5 +42,6 @@ target_include_directories(Renderer PUBLIC
     "${CMAKE_SOURCE_DIR}/dependencies"
     "${CMAKE_SOURCE_DIR}/source"
     "${CMAKE_SOURCE_DIR}/source/Engine"
+    "${CMAKE_SOURCE_DIR}/source/Math"
     "${CMAKE_SOURCE_DIR}"
 )

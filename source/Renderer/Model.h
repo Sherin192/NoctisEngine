@@ -46,10 +46,8 @@ public:
 private:
 	
 	ConstantBuffer<CBModelData>					m_cbuffer;
-	unsigned int								m_id;
-	std::vector<std::shared_ptr<Mesh>>			m_meshes;
-	std::string									directory;
 	Transform									m_transform;
+	std::vector<std::shared_ptr<Mesh>>			m_meshes;
 
 	friend AssetImporter;
 	friend AssetImporterImpl;

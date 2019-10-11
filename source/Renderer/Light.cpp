@@ -1,19 +1,19 @@
 #include "Core_pch.h"
+#if _DEBUG
 #include "Model.h" //TODO: Debug Only 
+#endif //_DEBUG
 #include "Light.h"
+#include "NoctisPipelinePass.h"
 
 namespace noctis::rdr
 {
-static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Shader& shader, Camera& camera, PointLight* light)
+static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera, PointLight* light)
 {
 	static Model model(renderDevice, sg::Shape::CUBE);
 	const DirectX::XMVECTOR rotaxis = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	const DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationAxis(rotaxis, 0.0f);
 
-	Transform t;
-	XMStoreFloat4x4(&t.position, DirectX::XMMatrixTranslation(light->position.x - 0.5f, light->position.y - 0.5f, light->position.z - 0.5f));
-	XMStoreFloat4x4(&t.rotation, rotation);
-	XMStoreFloat4x4(&t.scale, DirectX::XMMatrixScaling(0.2f, 0.2f, 0.2f));
+	Transform t{ {light->position.x, light->position.y, light->position.z}, {0.0f, 0.0f, 0.0f}, {0.2f, 0.2f, 0.2f} };
 	model.SetTransform(t);
 
 	GPUMaterial gpuMaterial;
@@ -22,12 +22,12 @@ static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Shader
 	gpuMaterial.specular = light->specular;
 
 	model.SetMaterial(Material(gpuMaterial), sg::kShapeNameCube);
-//model.Render(renderDevice, shader, camera);
+	pass->Render(renderDevice, model, camera);
 }
 
 
-void PointLight::Render(std::shared_ptr<RenderDevice>& renderDevice, Shader& shader, Camera& camera)
+void PointLight::Render(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera)
 {
-	RenderPointLight(renderDevice, shader, camera, this);
+	RenderPointLight(renderDevice, pass, camera, this);
 }
 }

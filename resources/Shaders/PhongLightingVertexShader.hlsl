@@ -44,7 +44,7 @@ vs_Output VS(vs_Input vin)
 		vout.normalW = mul(vin.normal, (float3x3)worldInvTranspose);
 	
 		//Transform to homogeneous clip space.
-		vout.posH = mul(float4(vin.position, 1.0f), worldViewProj);
+		vout.posH = mul(float4(vin.position, 1.0f), transpose(worldViewProj));
 
 		vout.texCoord = vin.texCoord;
 

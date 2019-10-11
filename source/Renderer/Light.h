@@ -11,7 +11,7 @@ namespace noctis
 	namespace rdr
 	{
 		class RenderDevice;
-		class Shader;
+		class PipelinePass;
 	}
 }
 //====================================================================================
@@ -28,9 +28,9 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 struct Light
 {
-	DirectX::SimpleMath::Vector4  ambient;
-	DirectX::SimpleMath::Vector4  diffuse;
-	DirectX::SimpleMath::Vector4  specular;
+	math::Nvec4	ambient;
+	math::Nvec4 diffuse;
+	math::Nvec4 specular;
 };
 
 //====================================================================================
@@ -44,7 +44,7 @@ struct Light
 //------------------------------------------------------------------------------------
 struct DirectionalLight : public Light
 {
-	DirectX::SimpleMath::Vector3  direction;
+	math::Nvec3 direction;
 	float pad;
 };
 
@@ -60,18 +60,17 @@ struct DirectionalLight : public Light
 //------------------------------------------------------------------------------------
 struct PointLight : public Light
 {
-	DirectX::SimpleMath::Vector3 position;
+	math::Nvec3 position;
 	float range;
-
-	DirectX::SimpleMath::Vector3 attenuation;
+	math::Nvec3 attenuation;
 	int enabled;
 
-	void Render(std::shared_ptr<RenderDevice>& renderDevice, Shader& shader, Camera& camera);
+	void Render(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera);
 
-	friend void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Shader& shader, Camera& camera, PointLight* light);
+	friend void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera, PointLight* light);
 };
+static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera, PointLight* light);
 
 //====================================================================================
 }	//noctis::rdr
-//static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Shader& shader, Camera& camera, PointLight* light);
 #endif //LIGHT_H

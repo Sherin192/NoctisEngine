@@ -25,7 +25,7 @@ if(WIN32)
 endif(WIN32)
 
 # Define the link libraries
-target_link_libraries(${PROJECT_NAME} ${LIBS} Engine Renderer ExampleApps)
+target_link_libraries(${PROJECT_NAME} ${LIBS} Math Engine Renderer ExampleApps)
 
 # Add .lib files
 target_link_directories(${PROJECT_NAME} PRIVATE
@@ -38,6 +38,7 @@ target_include_directories( ${PROJECT_NAME} PUBLIC
 	${CMAKE_SOURCE_DIR}/dependencies/imgui
 	${CMAKE_SOURCE_DIR}/dependencies
 	${CMAKE_SOURCE_DIR}/source/Engine
+	${CMAKE_SOURCE_DIR}/source/Math
 	${CMAKE_SOURCE_DIR}/source/Renderer
 	${CMAKE_SOURCE_DIR}/source/ExampleApps
 

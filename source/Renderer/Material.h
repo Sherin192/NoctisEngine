@@ -9,15 +9,14 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 struct GPUMaterial
 {
-	using vec4 = DirectX::SimpleMath::Vector4;
 	//-----------------------------------
-	vec4 ambient;							// 16 bytes
+	math::Nvec4 ambient;					// 16 bytes
 	//-----------------------------------
-	vec4 diffuse;							// 16 bytes
+	math::Nvec4 diffuse;					// 16 bytes
 	//-----------------------------------
-	vec4 specular;							// 16 bytes
+	math::Nvec4 specular;					// 16 bytes
 	//-----------------------------------
-	vec4 reflect;							// 16 bytes
+	math::Nvec4 reflect;					// 16 bytes
 	//-----------------------------------
 	int textureBitField;					// 4  bytes
 	float pad[3];							// 12 bytes

@@ -58,13 +58,10 @@ void Mesh::Render(std::shared_ptr<RenderDevice>& renderDevice)
 	{
 		if (texture)
 		{
-			//TODO: Refactor this as it is Dx11 specific
-			//renderDevice->GetDeviceContext()->PSSetSamplers(texture->GetType(), 1, texture->GetSampler().GetAddressOf());
 			renderDevice->SetSampler(texture->GetType(), 1, texture->GetSampler());
 			renderDevice->GetDeviceContext()->PSSetShaderResources(texture->GetType() == HEIGHT ? NORMAL : texture->GetType(), 1, texture->GetSRV().GetAddressOf());
 		}
 	}
-
 	m_vertexBuffer.Bind(renderDevice);
 	m_indexBuffer.Bind(renderDevice);
 

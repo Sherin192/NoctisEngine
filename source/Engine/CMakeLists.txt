@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 project(Engine)
 
-#add_subdirectory(Renderer)
-
 add_library(Engine
     Window.h
     Window.cpp
@@ -25,6 +23,7 @@ add_library(Engine
 target_include_directories(Engine PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_SOURCE_DIR}/source"
+    "${CMAKE_SOURCE_DIR}/source/Math"
     "${CMAKE_SOURCE_DIR}/dependencies"
     PRIVATE
     "${CMAKE_SOURCE_DIR}/dependencies/Assimp/include"

@@ -5,36 +5,45 @@ namespace noctis
 {
 struct Transform
 {
-	DirectX::XMFLOAT4X4							position;
-	DirectX::XMFLOAT4X4							rotation;
-	DirectX::XMFLOAT4X4							scale;
-	DirectX::XMMATRIX							matrix;
-	
-	Transform() = default;
-	Transform(DirectX::FXMMATRIX _rotation, DirectX::CXMMATRIX _position, DirectX::CXMMATRIX _scale)
-		: position(), rotation(), scale(), matrix()
-	{
-		Set(_rotation, _position, _scale);
-	}
+	math::Nvec3									position;
+	math::Nvec3									rotation;
+	math::Nvec3									scale;
 
-	void Set(DirectX::FXMMATRIX _rotation, DirectX::CXMMATRIX _position, DirectX::CXMMATRIX _scale)
-	{
-		XMStoreFloat4x4(&rotation, _rotation);
-		XMStoreFloat4x4(&position, _position);
-		XMStoreFloat4x4(&scale, _scale);
-		matrix = _scale * _position * _rotation;
-	}
+	Transform() : position(), rotation(), scale(1.0f, 1.0f, 1.0f) {}
 
+	Transform(const math::Nvec3& pos, const math::Nvec3& rot, const math::Nvec3& scale)
+		: position(pos), rotation(rot), scale(scale)
+	{
+	}
 	void Set(Transform& t)
 	{
-		rotation = t.rotation;
 		position = t.position;
+		rotation = t.rotation;
 		scale = t.scale;
-		
-		DirectX::XMMATRIX rot = XMLoadFloat4x4(&rotation); 
-		DirectX::XMMATRIX pos = XMLoadFloat4x4(&position);
-		DirectX::XMMATRIX scl = XMLoadFloat4x4(&scale);
-		matrix = scl * pos * rot;
+	}
+	auto AsMatrix()
+	{
+		return math::rotation(rotation) * math::translation(position) * math::scaling(scale);
+	}
+
+	void Translate(const math::Nvec3& t)
+	{
+		position += t;
+	}
+
+	void Rotate(const math::Nvec3& r)
+	{
+		rotation += r;
+	}
+
+	void Scale(const math::Nvec3& s)
+	{
+		scale *= s;
+	}
+
+	void UScale(float s)
+	{
+		scale *= s;
 	}
 };
 }
