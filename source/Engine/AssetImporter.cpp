@@ -72,6 +72,11 @@ static rdr::TextureUsage ConvertAssimpToEngineType(aiTextureType type)
 	case aiTextureType_HEIGHT:
 		return rdr::TextureUsage::HEIGHT;
 		break;
+	case aiTextureType_NORMALS:
+		return rdr::TextureUsage::NORMAL;
+	default:
+		assert(0);
+		return rdr::TextureUsage::UNSPECIFIED;
 	}
 }
 
@@ -173,15 +178,21 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 		else
 			vertex.texCoord = DirectX::XMFLOAT2(0.0f, 0.0f);
 		// tangent
-		vector.x = mesh->mTangents[i].x;
-		vector.y = mesh->mTangents[i].y;
-		vector.z = mesh->mTangents[i].z;
-		vertex.tangent = vector;
+		if (mesh->mTangents)
+		{
+			vector.x = mesh->mTangents[i].x;
+			vector.y = mesh->mTangents[i].y;
+			vector.z = mesh->mTangents[i].z;
+			vertex.tangent = vector;
+		}
 		//// bitangent
-		vector.x = mesh->mBitangents[i].x;
-		vector.y = mesh->mBitangents[i].y;
-		vector.z = mesh->mBitangents[i].z;
-		vertex.bitangent = vector;
+		if (mesh->mBitangents)
+		{
+			vector.x = mesh->mBitangents[i].x;
+			vector.y = mesh->mBitangents[i].y;
+			vector.z = mesh->mBitangents[i].z;
+			vertex.bitangent = vector;
+		}
 		
 		vertices.push_back(vertex);
 
