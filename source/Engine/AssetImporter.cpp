@@ -160,11 +160,13 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 
 		vertex.position = vector;
 		// normals
+		if (mesh->mNormals)
+		{
 		vector.x = mesh->mNormals[i].x;
 		vector.y = mesh->mNormals[i].y;
 		vector.z = mesh->mNormals[i].z;
 		vertex.normal = vector;
-
+		}
 		// texture coordinates
 		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 		{
@@ -254,7 +256,7 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadMaterial(aiMaterial *materi
 
 	if (material->GetTextureCount(type) > 1)
 	{
-		printf("dsasdfa");
+		assert(0);
 	}
 	if (material->GetTextureCount(type))
 	{
@@ -269,7 +271,6 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadMaterial(aiMaterial *materi
 				matFullPath /= matPath;
 
 				texture = LoadTexture(matFullPath.string().c_str(), ConvertAssimpToEngineType(type));
-
 			}
 		//}
 	}
