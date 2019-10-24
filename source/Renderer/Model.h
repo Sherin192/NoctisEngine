@@ -18,10 +18,9 @@ namespace noctis::rdr {
 class RenderDevice;
 class Mesh;
 class Material;
-class CBModelData;
 class Texture;
-template <typename DataType>
-class ConstantBuffer;
+template <typename DataType> class ConstantBuffer;
+struct CBModelData;
 
 class Model
 {
