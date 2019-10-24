@@ -24,9 +24,7 @@ namespace sg
 		CUBE,
 		CYLINDER,
 		CONE,
-		PLANE,
-		TRIANGLE,
-		SKULL
+		PLANE
 	};
 	constexpr const char* kShapeNameCube		= "cube";
 	constexpr const char* kShapeNameSphere		= "sphere";
@@ -48,8 +46,6 @@ public:
 	//void CreateCylinder(float topRadius, float bottomRadius, float height, UINT sliceCount, Data& data);
 	//void CreateCone(float radius, float height, UINT sliceCount, Data& data);
 	void CreatePlane(float width, float depth, uint32_t wDivisions , uint32_t hDivisions, Data& data);
-
-	void CreateSkull(Data& data);
 
 private:
 	float GenerateHeight(float x, float z) const { return (0.3f * (z*cos(0.15f * x) + x * sin(0.2f * z))); }

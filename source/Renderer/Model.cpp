@@ -75,39 +75,7 @@ namespace noctis::rdr
 			sGen.CreateCube(20.0f, 20.0f, 20.0f, data);
 
 			break;
-		case sg::Shape::TRIANGLE:
-		{
-			name = "triangle";
-			/*data.vertices.emplace_back(Vertex(Vector3(-10.0f, -10.0f, -10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f), Vector2(0.0f, 1.0f)));
-			data.vertices.emplace_back(Vertex(Vector3(-10.0f, +10.0f, -10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f), Vector2(0.0f, 0.0f)));
-			data.vertices.emplace_back(Vertex(Vector3(+10.0f, +10.0f, -10.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f), Vector2(1.0f, 0.0f)));
-
-			Vector3 edge1 = data.vertices[0].position - data.vertices[1].position;
-			Vector3 edge2 = data.vertices[0].position - data.vertices[2].position;
-			Vector2 deltaUV1 = data.vertices[0].texCoord - data.vertices[1].texCoord;
-			Vector2 deltaUV2 = data.vertices[0].texCoord - data.vertices[2].texCoord;
-
-			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-			Vector3 bitangent;
-
-			bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-			bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-			bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-			bitangent.Normalize();
-
-			data.vertices[0].bitangent = bitangent;
-			data.vertices[1].bitangent = bitangent;
-			data.vertices[2].bitangent = bitangent;
-			data.indices = { 0, 1, 2 };
-*/
-			break;
-		}
-		case sg::Shape::SKULL:
-
-			name = sg::kShapeNameSkull;
-			sGen.CreateSkull(data);
-			break;
+		
 		case sg::Shape::PLANE:
 			name = sg::kShapeNamePlane;
 			sGen.CreatePlane(10.0f, 10.0f, 2, 2, data);
@@ -174,7 +142,7 @@ namespace noctis::rdr
 				return m->GetMaterial();
 			}
 		}
-
+		assert(!m_meshes.empty());
 	}
 
 
