@@ -6,6 +6,7 @@
 #include "NoctisPipelinePass.h"
 #include "Renderer/NoctisSampler.h"
 
+
 namespace noctis
 {
 	using namespace rdr;
@@ -26,12 +27,19 @@ namespace noctis
 	bool ExampleDx11App::Init()
 	{
 		m_pPipelinePass.reset(new PipelinePass(m_pRenderDevice));
-		
+		m_pFlatPipelinePass.reset(new PipelinePass(m_pRenderDevice));
+
 		AssetImporter::Instance(m_pRenderDevice);
 
 		m_pVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingVertexShader.hlsl");
 		m_pPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingPixelShader.hlsl");
+		m_pFlatVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/FlatVertexShader.hlsl");
+		m_pFlatPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/FlatPixelShader.hlsl");
 		
+		m_pFlatVShader->SetInputLyout({
+			{VertexElement::kPosition, 0, VertexElement::kFloat3 }
+			});
+
 		m_pVShader->SetInputLyout({
 			{VertexElement::kPosition, 0, VertexElement::kFloat3 },
 			{VertexElement::kNormal, 0, VertexElement::kFloat3},
@@ -41,12 +49,14 @@ namespace noctis
 			});
 
 		m_pPipelinePass->AddShaders(m_pVShader, m_pPShader);
-		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 5.0f, 0.0f), 0.0f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
+		m_pFlatPipelinePass->AddShaders(m_pFlatVShader, m_pFlatPShader);
+		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 5.0f, 0.0f), 0.2f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 2000.0f);
 
 		//-------------------------------------------------------------------------------------------------------------------------------
-		m_pSkull = std::make_unique<Model>(m_pRenderDevice, sg::Shape::SKULL);
+		
+		m_pSkull = AssetImporter::Instance(m_pRenderDevice).LoadModel("..\\resources\\Models\\suzanne.obj");
 
-		Transform skullTransform({ 0.0f, 20.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		Transform skullTransform({ 0.0f, 50.0f, 10.0f }, { 1.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
 		m_pSkull->SetTransform(skullTransform);
 		//--------------------------------------------------------------------------------------------------------------------------------------
 		//TODO:Refactor the shape generator so this is done automaticaly when we pass it the textures paths
@@ -55,12 +65,12 @@ namespace noctis
 
 		//Load textures for the model, this is done only for generated models.
 		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureUsage::DIFFUSE);
-		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureUsage::SPECULAR);
+		//std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureUsage::SPECULAR);
 		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance(m_pRenderDevice).LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureUsage::NORMAL);
 
 		//Set textures previously loaded, this is also done only for generated models.
 		m_pCrate->SetTexture(crateDiffuse, TextureUsage::DIFFUSE, sg::kShapeNameCube);
-		m_pCrate->SetTexture(crateSpecular, TextureUsage::SPECULAR, sg::kShapeNameCube);
+		//m_pCrate->SetTexture(crateSpecular, TextureUsage::SPECULAR, sg::kShapeNameCube);
 		m_pCrate->SetTexture(crateNormal, TextureUsage::NORMAL, sg::kShapeNameCube);
 
 		Transform crateTransform({ 30.0f, 20.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
@@ -82,12 +92,10 @@ namespace noctis
 		cbFrameData.dirLight = dirLight;
 
 		PointLight pointLight;
-		pointLight.ambient = { 0.1f, 0.06f, 0.0f, 1.0f };
-		pointLight.diffuse = { 1.0f, 0.6f, 0.0f, 1.0f };
+		pointLight.diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 		pointLight.specular = { 1.0f, 0.6f, 0.0f, 0.0f };
 		pointLight.attenuation = { 1.0f, 0.0022f, 0.00019f };
 		pointLight.position = { 0.0f, 0.0f, 30.0f };
-		pointLight.range = 150.0f;
 		pointLight.enabled = 1;
 
 		cbFrameData.pointLights[0] = pointLight;
@@ -102,6 +110,7 @@ namespace noctis
 		m_pConstantPerFrame.reset(m_pRenderDevice->CreateBuffer<rdr::ConstantBuffer, CBFrameData>(true, &cbFrameData));
 
 		m_pPipelinePass->BindConstantBuffers(m_pRenderDevice, m_pConstantPerFrame.get());
+		m_pFlatPipelinePass->BindConstantBuffers(m_pRenderDevice, m_pConstantPerFrame.get());
 
 		return true;
 	}
@@ -136,7 +145,7 @@ namespace noctis
 		for (int i = 0; i < 8; ++i)
 		{
 			if (cbFrameData.pointLights[i].enabled)
-				cbFrameData.pointLights[i].Render(m_pRenderDevice, m_pPipelinePass.get(), *m_camera);
+				cbFrameData.pointLights[i].Render(m_pRenderDevice, m_pFlatPipelinePass.get(), *m_camera);
 		}
 #endif //_DEBUG
 #if NOCTIS_USE_IMGUI
@@ -157,20 +166,19 @@ namespace noctis
 	//-----------------------------------------------------------------------------
 	void ExampleDx11App::RenderImGuiFrame()
 	{
-		ImGui::Begin("Debug");
-		/*
-			ImGui::SliderFloat3("PL1.ambient", &pointLight.position, 0.0f, 1.0f);
-			ImGui::SliderFloat3("PL1.diffuse", &CBFrameData.dirLight.diffuse.x, 0.0f, 1.0f);
-			ImGui::SliderFloat3("PL1.specular", &CBFrameData.dirLight.specular.x, 0.0f, 1.0f);*/
-		Material& crateMat = m_pCrate->GetMaterial(sg::kShapeNameCube);
-
-		ImGui::SliderFloat("PL1.pow", &crateMat.GetGPUMaterial().specular.w, 0.0f, 1000.0f);
-		//ImGui::SliderFloat3("PL1diffuse", &CBFrameData.pointLights[0].diffuse.x, 0.0f, 10.0f);
-
-		ImGui::SliderFloat3("PL1ambient", &cbFrameData.pointLights[0].position.x, 0.0f, 1000.0f);
-		//ImGui::SliderFloat3("PL1specular", &CBFrameData.pointLights[0].specular.x, 0.0f, 10.0f);
-
-
+		static int selected_light = 0;
+		ImGui::Begin("Lights");
+		ImGui::Text("Directional Light");
+		ImGui::SliderFloat3("Direction", &cbFrameData.dirLight.direction.x, -1.0f, 1.0f);
+		ImGui::SliderFloat3("Global ambient", &cbFrameData.dirLight.ambient.x, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Diffuse", &cbFrameData.dirLight.diffuse.x, 0.0f, 1.0f);
+		ImGui::SliderFloat3("SpecularDir", &cbFrameData.dirLight.specular.x, 0.0f, 1.0f);
+		ImGui::Text("Point Lights");
+		ImGui::SliderFloat3("Position", &cbFrameData.pointLights[selected_light].position.x, -500.0f, 500.0f);
+		ImGui::SliderFloat3("Diffuse", &cbFrameData.pointLights[selected_light].diffuse.x, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Specular", &cbFrameData.pointLights[selected_light].specular.x, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Attenuation", &cbFrameData.pointLights[selected_light].attenuation.x, 0.0f, 1.0f);
+		ImGui::Checkbox("Enable", (bool*)&cbFrameData.pointLights[selected_light].enabled);
 
 		ImGui::End();
 

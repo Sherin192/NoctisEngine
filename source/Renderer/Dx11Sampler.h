@@ -107,8 +107,9 @@ namespace noctis::rdr
 	public:
 		Dx11Sampler(std::shared_ptr<RenderDevice>& renderDevice, D3D11_SAMPLER_DESC desc) : m_desc(desc)
 		{
+			//TODO: Result check should be done only in Debug.
 			auto hResult = renderDevice->GetDevice()->CreateSamplerState(&desc, m_pSampler.GetAddressOf());
-			if (FAILED(hResult)) printf("Failed to create a sampler state\n"); //TODO: Replace when logging is implemented.
+			if (FAILED(hResult)) Log(LogLevel::Error, "Failed to create a sampler state");
 		}
 
 		auto& GetDx11Sampler() { return m_pSampler; }

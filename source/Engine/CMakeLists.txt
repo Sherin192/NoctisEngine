@@ -18,6 +18,9 @@ add_library(Engine
     AssetImporter.cpp
     AssetManager.h
     AssetManager.cpp
+    Logger.h
+    Logger.cpp
+    NoctisMacros.h
 )
 
 target_include_directories(Engine PUBLIC
@@ -25,7 +28,8 @@ target_include_directories(Engine PUBLIC
     "${CMAKE_SOURCE_DIR}/source"
     "${CMAKE_SOURCE_DIR}/source/Math"
     "${CMAKE_SOURCE_DIR}/dependencies"
+    "${CMAKE_SOURCE_DIR}/dependencies/spdlog/include"
     PRIVATE
     "${CMAKE_SOURCE_DIR}/dependencies/Assimp/include"
-
+    
 )

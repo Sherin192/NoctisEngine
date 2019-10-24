@@ -24,6 +24,8 @@
 #include <queue>
 #include <unordered_map>
 
+#include "NoctisMacros.h"
+#include "Logger.h"
 #pragma comment(lib,"d3dcompiler.lib")
 //#pragma comment(lib,"user32.lib") 
 

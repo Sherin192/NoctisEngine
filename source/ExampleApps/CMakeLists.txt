@@ -9,6 +9,7 @@ add_library(ExampleApps
 target_include_directories(ExampleApps PUBLIC
 "${CMAKE_CURRENT_SOURCE_DIR}"
 "${CMAKE_SOURCE_DIR}/dependencies"
+"${CMAKE_SOURCE_DIR}/dependencies/spdlog/include"
 "${CMAKE_SOURCE_DIR}/source"
 "${CMAKE_SOURCE_DIR}/source/Engine"
 "${CMAKE_SOURCE_DIR}/source/Renderer"

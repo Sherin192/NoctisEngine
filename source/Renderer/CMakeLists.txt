@@ -40,6 +40,7 @@ add_library(Renderer
 target_include_directories(Renderer PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_SOURCE_DIR}/dependencies"
+	"${CMAKE_SOURCE_DIR}/dependencies/spdlog/include"
     "${CMAKE_SOURCE_DIR}/source"
     "${CMAKE_SOURCE_DIR}/source/Engine"
     "${CMAKE_SOURCE_DIR}/source/Math"

@@ -24,7 +24,7 @@ namespace noctis::rdr
 		HRESULT hResult = renderDevice->GetDevice()->CreateTexture2D(&texDesc, NULL, m_pTexture.GetAddressOf());
 		if (FAILED(hResult))
 		{
-			printf("failed to create a 2D texture.");
+			Log(LogLevel::Warning, "Failed to create a 2D texture.");
 		}
 
 		renderDevice->GetDeviceContext()->UpdateSubresource(m_pTexture.Get(), 0, NULL, data, width * nrChannels, 0);
@@ -39,7 +39,7 @@ namespace noctis::rdr
 		renderDevice->GetDeviceContext()->GenerateMips(m_pTextureSRV.Get());
 		if (FAILED(hResult))
 		{
-			printf("Failed to generate mips.");
+			Log(LogLevel::Error, "Failed to generate mips.");
 		}
 
 		m_pSampler = std::make_unique<Sampler>(renderDevice, SamplerType<FilterLinear, AddressUWrap, AddressVWrap, AddressWClamp, CompareNever>{});

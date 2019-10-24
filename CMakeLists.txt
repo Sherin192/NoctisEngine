@@ -17,7 +17,7 @@ endif(WIN32)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(LIBS assimp IMGUI)
+set(LIBS assimp IMGUI spdlog)
 
 #add directXTK if we are on Windows
 if(WIN32)

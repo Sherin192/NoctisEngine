@@ -102,7 +102,6 @@ namespace noctis::rdr
 	{
 		BufferType* buffer = static_cast<BufferType*>(this);
 
-		HRESULT hResult;
 		::D3D11_BUFFER_DESC desc;
 		ZeroMemory(&desc, sizeof(::D3D11_BUFFER_DESC));
 		desc.ByteWidth = sizeof(DataType) * n_elem;
@@ -139,7 +138,7 @@ namespace noctis::rdr
 		HRESULT hr = renderDevice->GetDevice()->CreateBuffer(&desc, data ? &init_data : NULL, m_pBuffer.GetAddressOf());
 		if (FAILED(hr))
 		{
-			printf("Log\n");
+			Log(LogLevel::Warning, "Failed to create a Buffer of type ");
 		}
 	}
 
