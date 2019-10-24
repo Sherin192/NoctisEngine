@@ -147,7 +147,7 @@ namespace noctis::rdr
 		ComPtr<IDXGIFactory5> dxgiFactory;
 		dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)dxgiFactory.GetAddressOf());
 
-		bool allowTearing = false;
+		BOOL allowTearing = 0;
 		dxgiFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
 
 		DXGI_SWAP_CHAIN_DESC1 swapDesc;
