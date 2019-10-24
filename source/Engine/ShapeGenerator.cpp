@@ -307,9 +307,9 @@ namespace sg
 		float uStep = 1.0f / (wDivisions - 1);
 		float vStep = 1.0f / (hDivisions - 1);
 
-		for (int i = 0; i < hDivisions; ++i)
+		for (uint32_t i = 0; i < hDivisions; ++i)
 		{
-			for (int j = 0; j < wDivisions; ++j)
+			for (uint32_t j = 0; j < wDivisions; ++j)
 			{
 
 				data.vertices.push_back(Vertex(Vector3(-halfWidth + j * wStep, 0.0f, halfDepth - i * hStep), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f), Vector2(j * uStep, i * vStep)));
@@ -354,9 +354,9 @@ namespace sg
 		//	}
 		//}
 
-		for (int i = 0; i < hDivisions - 1; ++i)
+		for (uint32_t i = 0; i < hDivisions - 1; ++i)
 		{
-			for (int j = 0; j < wDivisions - 1; ++j)
+			for (uint32_t j = 0; j < wDivisions - 1; ++j)
 			{
 				indices.push_back(i * hDivisions + j);
 				indices.push_back(i * hDivisions + j + 1);
@@ -370,48 +370,5 @@ namespace sg
 
 		//data.vertices = vertices;
 		data.indices = indices;
-	}
-
-
-	void ShapeGenerator::CreateSkull(Data& data)
-	{
-		using DirectX::XMFLOAT4;
-		std::ifstream fin("../resources/Models/skull.txt");
-
-		if (!fin)
-		{
-			MessageBox(0, "../resources/Models/skull.txt not found.", 0, 0);
-			return;
-		}
-
-		UINT vcount = 0;
-		UINT tcount = 0;
-		std::string ignore;
-
-		fin >> ignore >> vcount;
-		fin >> ignore >> tcount;
-		fin >> ignore >> ignore >> ignore >> ignore;
-
-		data.vertices.resize(vcount);
-
-		for (UINT i = 0; i < vcount; ++i)
-		{
-			fin >> data.vertices[i].position.x >> data.vertices[i].position.y >> data.vertices[i].position.z;
-			fin >> data.vertices[i].normal.x >> data.vertices[i].normal.y >> data.vertices[i].normal.z;
-		}
-
-		fin >> ignore;
-		fin >> ignore;
-		fin >> ignore;
-
-		int skullIndexCount = 3 * tcount;
-		data.indices.resize(skullIndexCount);
-
-		for (UINT i = 0; i < tcount; ++i)
-		{
-			fin >> data.indices[i * 3 + 0] >> data.indices[i * 3 + 1] >> data.indices[i * 3 + 2];
-		}
-
-		fin.close();
 	}
 }
