@@ -16,19 +16,11 @@ cbuffer ConstantBufferPerObject : register(b0)
 struct vs_Input
 {
 	float3 position : POSITION;
-	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
-	float3 bitangent : BITANGENT;
-	float2 texCoord : TEXCOORD;
 };
 
 struct vs_Output
 {
 	float4 posH : SV_Position;
-	float3 posW : POSITION;
-	float3 normalW : NORMAL;
-	float2 texCoord : TEXCOORD;
-	float3x3 TBN : TBN;
 };
 
 
@@ -38,22 +30,8 @@ struct vs_Output
 
 vs_Output VS(vs_Input vin)
 {
-		vs_Output vout;
-		//Transform to world space.
-    vout.posW = mul(world, float4(vin.position, 1.0f)).xyz;
-    vout.normalW = mul((float3x3) worldInvTranspose, vin.normal);
-	
+	vs_Output vout;
 		//Transform to homogeneous clip space.
-    vout.posH = mul(worldViewProj, float4(vin.position, 1.0f));
-		
-		vout.texCoord = vin.texCoord;
-
-    float3 T = normalize(mul(world, float4(vin.tangent, 1.0f)).xyz);
-    float3 B = normalize(mul(world, float4(vin.bitangent, 1.0f)).xyz);
-    float3 N = normalize(mul(world, float4(vin.normal, 1.0f)).xyz);
-
-	//T, B and N are treated as rows!
-	vout.TBN = float3x3(T, B, N);
-		
+	vout.posH = mul(worldViewProj, float4(vin.position, 1.0f));	
 	return vout;
 }

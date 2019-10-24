@@ -28,7 +28,6 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 struct Light
 {
-	math::Nvec4	ambient;
 	math::Nvec4 diffuse;
 	math::Nvec4 specular;
 };
@@ -44,6 +43,7 @@ struct Light
 //------------------------------------------------------------------------------------
 struct DirectionalLight : public Light
 {
+	math::Nvec4	ambient;
 	math::Nvec3 direction;
 	float pad;
 };
@@ -61,9 +61,9 @@ struct DirectionalLight : public Light
 struct PointLight : public Light
 {
 	math::Nvec3 position;
-	float range;
+	float pad;
 	math::Nvec3 attenuation;
-	int enabled;
+	uint32_t enabled;
 
 	void Render(std::shared_ptr<RenderDevice>& renderDevice, PipelinePass* pass, Camera& camera);
 

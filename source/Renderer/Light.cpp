@@ -17,7 +17,6 @@ static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Pipeli
 	model.SetTransform(t);
 
 	GPUMaterial gpuMaterial;
-	gpuMaterial.ambient = light->ambient;
 	gpuMaterial.diffuse = light->diffuse;
 	gpuMaterial.specular = light->specular;
 
