@@ -71,21 +71,26 @@ inline bool HasTextureMap(int mask, int texture_type) { return (mask & (1 << tex
 
 
 
+float Phong(float3 light, float3 view, float3 normal)
+{
+    float3 r = reflect(light, normal);
+    return max(dot(r, view), 0.0f);
+}
 
-
-
+float BlinnPhong(float3 light, float3 view, float3 normal)
+{
+    float3 half_vec = normalize(light + view);
+    return max(dot(normal, half_vec), 0.0f);
+}
 
 
 
 
 void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 normal, float3 eye, out float4 diffuse, out float4 specular)
 {
-	float3 lightVec = normalize(-light.direction);
+    float diffuseFactor = max(0.0f, dot(-light.direction, normal));
 
-	float diffuseFactor = max(0.0f, dot(lightVec, normal));
-
-	float3 r = reflect(lightVec, normal);
-	float specFactor = pow(max(dot(r, eye), 0.0f), mat.specular.w);
+    float specFactor = pow(BlinnPhong(light.direction, eye, normal), mat.specular.w);
 
 	diffuse = diffuseFactor * light.diffuse;
 	specular = specFactor * light.specular;
@@ -111,10 +116,9 @@ void CalculatePointLight(GPUMaterial mat, PointLight L, float3 pos, float3 norma
 	// Add diffuse and specular term, provided the surface is in 
 	// the line of site of the light.
 
-	float diffuseFactor = max(0.0f, dot(normal, -lightVec));
+	float diffuseFactor = max(0.0f, dot(normal, lightVec));
 
-	float3 v = normalize(reflect(-lightVec, normal));
-	float specFactor = pow(max(dot(v, toEye), 0.0f), mat.specular.w);
+    float specFactor = pow(BlinnPhong(lightVec, toEye, normal), mat.specular.w);
 		
 	diffuse = diffuseFactor *L.diffuse;
 	spec = specFactor * L.specular;
