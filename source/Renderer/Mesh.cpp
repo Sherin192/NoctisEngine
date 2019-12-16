@@ -5,17 +5,17 @@
 namespace noctis::rdr
 {
 
-Mesh::Mesh(std::shared_ptr<RenderDevice>& renderDevice, std::string& name, std::vector<Vertex> vertices, std::vector<unsigned> indices)
-: m_name(name), m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_textures(), m_material(), m_vertexBuffer(), m_indexBuffer()
+Mesh::Mesh(std::shared_ptr<RenderDevice>& renderDevice, std::string& name, std::vector<Vertex>& vertices, std::vector<unsigned>& indices)
+: m_name(name), m_textures(), m_material(), m_vertexBuffer(), m_indexBuffer()
 {	
-		Setup(renderDevice);
+		Setup(renderDevice, vertices, indices);
 }
 
 
-Mesh::Mesh(std::shared_ptr<RenderDevice>& renderDevice, std::string& name, std::vector<Vertex> vertices, std::vector<unsigned> indices, TextureArray textures)
-	: m_name(name), m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_textures(std::move(textures)), m_material(), m_vertexBuffer(), m_indexBuffer()
+Mesh::Mesh(std::shared_ptr<RenderDevice>& renderDevice, std::string& name, std::vector<Vertex>& vertices, std::vector<unsigned>& indices, TextureArray textures)
+	: m_name(name), m_textures(std::move(textures)), m_material(), m_vertexBuffer(), m_indexBuffer()
 {
-	Setup(renderDevice);
+	Setup(renderDevice, vertices, indices);
 	for (auto& tex : textures)
 	{
 		if(tex)
@@ -26,8 +26,6 @@ Mesh::Mesh(std::shared_ptr<RenderDevice>& renderDevice, std::string& name, std::
 
 Mesh::Mesh(Mesh&& other) noexcept
 	:
-	m_vertices(std::move(other.m_vertices)),
-	m_indices(std::move(other.m_indices)),
 	m_textures(std::move(other.m_textures)),
 	m_material(std::move(other.m_material)),
 	m_vertexBuffer(),
@@ -65,16 +63,16 @@ void Mesh::Render(std::shared_ptr<RenderDevice>& renderDevice)
 	m_vertexBuffer.Bind(renderDevice);
 	m_indexBuffer.Bind(renderDevice);
 
-	renderDevice->GetDeviceContext()->DrawIndexed(m_indices.size(), 0, 0);
+	renderDevice->GetDeviceContext()->DrawIndexed(m_indexBuffer.Size(), 0, 0);
 }
 
 
-void Mesh::Setup(std::shared_ptr<RenderDevice>& renderDevice)
+void Mesh::Setup(std::shared_ptr<RenderDevice>& renderDevice, std::vector<Vertex>& vertices, std::vector<unsigned>& indices)
 {
-	m_vertexBuffer.SetStride(sizeof(m_vertices[0]));
+	m_vertexBuffer.SetStride(sizeof(vertices[0]));
 	m_vertexBuffer.SetOffset(0);
-	m_vertexBuffer.Init(std::forward<std::shared_ptr<RenderDevice>>(renderDevice), false, m_vertices.data(), m_vertices.size());
-	m_indexBuffer.Init(renderDevice, false, m_indices.data(), m_indices.size());
+	m_vertexBuffer.Init(std::forward<std::shared_ptr<RenderDevice>>(renderDevice), false, vertices.data(), vertices.size());
+	m_indexBuffer.Init(renderDevice, false, indices.data(), indices.size());
 }
 
 }

@@ -80,10 +80,25 @@ namespace noctis::rdr {
 		IndexBuffer(std::shared_ptr<RenderDevice>& renderDevice) : Base(renderDevice) {}
 
 		IndexBuffer(std::shared_ptr<RenderDevice>& renderDevice, bool dynamic, DataType* data, uint32_t n_elem) : Base(renderDevice, dynamic, data, n_elem) {}
+		
+		void Init(std::shared_ptr<RenderDevice>& renderDevice, bool dynamic, DataType* data, size_t n_elem) 
+		{ 
+			m_elementCount = n_elem; 
+			Base::Init(renderDevice, dynamic, data, n_elem);
+		};
 
+		void Swap(IndexBuffer& other) noexcept
+		{
+			Base::Swap(other);
+			m_elementCount = other.m_elementCount;
+		}
+
+		auto Size() const noexcept { return m_elementCount; }
 	private:
 		IndexBuffer(IndexBuffer&) = delete;
 		IndexBuffer& operator=(IndexBuffer&) = delete;
+
+		uint32_t m_elementCount;
 	};
 
 }
