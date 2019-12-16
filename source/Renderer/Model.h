@@ -1,6 +1,7 @@
 #ifndef MODEL_H_
 #define MODEL_H_
 
+#include "NoctisRenderable.h"
 #include "Mesh.h"
 #include "ShapeGenerator.h"
 #include "Transform.h"
@@ -22,7 +23,7 @@ class Texture;
 template <typename DataType> class ConstantBuffer;
 struct CBModelData;
 
-class Model
+class Model : public IRenderable<Model>
 {
 public:
 	Model() = default;
@@ -35,7 +36,7 @@ public:
 	Transform&			GetTransform() noexcept;
 	const Transform&	GetTransform() const noexcept;
 	void				SetTransform(Transform& t) noexcept;
-	void				SetTexture(std::shared_ptr<Texture>&, TextureUsage, const char* mesh);
+	void				SetTexture(std::shared_ptr<Texture>&, TextureUsage, const char* meshName);
 	void				SetMaterial(Material, const char* mesh);
 	Material&			GetMaterial(const char* mesh);
 	const				std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return m_meshes; }
