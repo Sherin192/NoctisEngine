@@ -35,6 +35,9 @@ add_library(Renderer
     ConstantBufferData.cpp
     NoctisPipelinePass.h
     Vertex.h
+    NoctisCubeMap.h
+    NoctisCubeMap.cpp
+    NoctisRenderable.h
 )
 
 target_include_directories(Renderer PUBLIC
