@@ -13,7 +13,8 @@ namespace noctis::rdr{
 	
 	class VertexShader;
 	class PixelShader;
-	class Model;
+	template<typename T>
+	struct IRenderable;
 
 	enum CBufferType { kModel, kFrame, kCount};
 
@@ -26,10 +27,10 @@ namespace noctis::rdr{
 		}
 
 
-		void AddShaders(std::weak_ptr<VertexShader> vShader, std::weak_ptr<noctis::rdr::PixelShader> pShader)
+		void AddShaders(std::shared_ptr<VertexShader>& vShader, std::shared_ptr<noctis::rdr::PixelShader>& pShader)
 		{
-			m_pVertexShader = vShader.lock();
-			m_pPixelShader = pShader.lock();
+			m_pVertexShader = vShader;
+			m_pPixelShader = pShader;
 		}
 
 		template <template<typename> typename CB, typename DataType>
@@ -50,10 +51,9 @@ namespace noctis::rdr{
 			m_pPixelShader->Bind(renderDevice);
 		}
 
-		void Render(std::shared_ptr<RenderDevice>& renderDevice, Model& model,  Camera& camera)
+		template <typename T>
+		void Render(std::shared_ptr<RenderDevice>& renderDevice, IRenderable<T>& model,  Camera& camera)
 		{
-			renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
-
 			renderDevice->SetPrimitiveTopology(kTriangleList);
 
 			m_pVertexShader->BindInputLayout(renderDevice);

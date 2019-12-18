@@ -17,7 +17,7 @@ namespace noctis::rdr
 	public:
 		Dx11Texture() = default;
 
-		Dx11Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::string path, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type);
+		Dx11Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type = TextureUsage::UNSPECIFIED);
 		
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		GetSRV()	 const	noexcept;
 		
