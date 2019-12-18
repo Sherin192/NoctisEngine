@@ -13,8 +13,8 @@ namespace noctis
 		m_title("Dx11App"),
 		m_wndStyle(WS_OVERLAPPEDWINDOW)
 	{
-		m_width = 1440;
-		m_height = 900;
+		m_width = 1280;
+		m_height = 720;
 
 		if (!Init())
 		{

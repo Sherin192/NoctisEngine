@@ -23,10 +23,13 @@ cbuffer ConstantBufferPerObject : register(b0)
 	//----------------------------------
 	float4x4 worldViewProj;						// 64 bytes
 	//----------------------------------
-	GPUMaterial material;						// 80 bytes
-	//----------------------------------
 };												//272 bytes total
 
+cbuffer ConstantBufferMaterial : register(b2)
+{
+	GPUMaterial material;						// 80 bytes
+	//----------------------------------
+}
 
 Texture2D TexDiffuse : register(t0);
 Texture2D TexSpecular : register(t1);
@@ -75,7 +78,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float3 toEye = normalize(eyePos - pin.posW);
 	
 	//One globac ambient light
-	float4 ambient = material.ambient * dirLight.ambient;
+	float4 ambient = dirLight.ambient;
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	
@@ -118,5 +121,6 @@ float4 PS(ps_Input pin) : SV_TARGET
 	//Common to take alpha from diffuse materail.
 	litColor.a = mat.diffuse.w;
 	
-	return litColor;
+	pow(litColor.rgb, float3(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f));
+  return litColor;
 }

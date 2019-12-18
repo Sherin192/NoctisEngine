@@ -15,12 +15,23 @@ static void RenderPointLight(std::shared_ptr<RenderDevice>& renderDevice, Pipeli
 
 	Transform t{ {light->position.x, light->position.y, light->position.z}, {0.0f, 0.0f, 0.0f}, {0.2f, 0.2f, 0.2f} };
 	model.SetTransform(t);
+	std::string name = "_LightMaterial";
+	std::shared_ptr<Material> material;
+	if (material = MaterialPool::Instance().GetMaterial(name); !material)
+	{
+		material = std::make_shared<PhongMaterial>(name);
+		
+		MaterialPool::Instance().AddMaterial(name, material);
+	}
+	
+	PhongMaterial* derived =  dynamic_cast<PhongMaterial*>(&*material);
+	derived->SetAmbient(math::Nvec4(0.0f,0.0f,0.0f,0.0f));
+	derived->SetDiffuse(light->diffuse);
+	derived->SetSpecular(light->specular);
+	derived->Update(renderDevice);
+	model.SetMaterial(name, sg::kShapeNameCube);
+	
 
-	GPUMaterial gpuMaterial;
-	gpuMaterial.diffuse = light->diffuse;
-	gpuMaterial.specular = light->specular;
-
-	model.SetMaterial(Material(gpuMaterial), sg::kShapeNameCube);
 	pass->Render(renderDevice, model, camera);
 }
 

@@ -4,6 +4,8 @@
 #define TEX_SLOT_NORMAL 	2
 #define TEX_SLOT_HEIGHT 	3
 
+static const float PI = 3.141592;
+
 struct GPUMaterial
 {
 	float4 ambient;								// 16 bytes
@@ -17,6 +19,20 @@ struct GPUMaterial
 	int textureBitField;						// 4  bytes
 	float3 pad;									// 12 bytes
 };												// 80 bytes total
+
+struct PBRMaterialData
+{
+    float4 albedo;								// 16 bytes
+	//-----------------------------------
+    float metallic;								// 4  bytes
+	//-----------------------------------
+    float roughness;							// 4  bytes
+	//-----------------------------------
+    float ao;									// 4  bytes
+    int textureBitField;						// 4  bytes
+};												// 32 bytes total
+
+
 
 struct DirectionalLight
 {
@@ -90,7 +106,7 @@ void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 n
 {
     float diffuseFactor = max(0.0f, dot(-light.direction, normal));
 
-    float specFactor = pow(BlinnPhong(light.direction, eye, normal), mat.specular.w);
+    float specFactor = pow(BlinnPhong(-light.direction, eye, normal), mat.specular.w);
 
 	diffuse = diffuseFactor * light.diffuse;
 	specular = specFactor * light.specular;

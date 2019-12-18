@@ -31,18 +31,15 @@ public:
 	Model(std::shared_ptr<RenderDevice>& renderDevice, std::string_view path);
 
 	void				Render(std::shared_ptr<RenderDevice>&, Camera&);
-	bool				Generate(std::shared_ptr<RenderDevice>& renderDevice, sg::Shape shape);
+	void				Generate(std::shared_ptr<RenderDevice>& renderDevice, sg::Shape shape);
 
 	Transform&			GetTransform() noexcept;
 	const Transform&	GetTransform() const noexcept;
 	void				SetTransform(Transform& t) noexcept;
-	void				SetTexture(std::shared_ptr<Texture>&, TextureUsage, const char* meshName);
-	void				SetMaterial(Material, const char* mesh);
-	Material&			GetMaterial(const char* mesh);
+	void				SetMaterial(const std::string& name, const std::string& mesh);
+	std::shared_ptr<Material>	GetMaterial(const std::string& mesh);
 	const				std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return m_meshes; }
 
-	void				UpdateBuffer(std::shared_ptr<RenderDevice>& renderDevice);
-	//void				BindBuffer(std::shared_ptr<RenderDevice>&, uint32_t slot);
 private:
 	
 	ConstantBuffer<CBModelData>					m_cbuffer;

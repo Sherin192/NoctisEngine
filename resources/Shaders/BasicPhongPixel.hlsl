@@ -69,6 +69,6 @@ float4 PS(ps_Input pin) : SV_TARGET
 	
 		//Common to take alpha from duffuse materail.
 		litColor.a = litColor;
-	
+		
 		return litColor;
 }

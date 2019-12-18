@@ -7,13 +7,11 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 //		CBModelData Constructor: 
 //------------------------------------------------------------------------------------
-	CBModelData::CBModelData(Nmat4 w, Nmat4 v, Nmat4 p, Material& mat)
+	CBModelData::CBModelData(Nmat4 w, Nmat4 v, Nmat4 p)
 	{
 		world = w;
 		worldViewProj = w * v * p;
 		worldInvTranspose = math::inverseTranspose(w);
-		memset(&material, 0, sizeof(GPUMaterial));
-		material = mat.GetGPUMaterial();
 	}
 
 	//====================================================================================
@@ -30,7 +28,6 @@ namespace noctis::rdr
 		world = w;
 		worldViewProj = wvp;
 		worldInvTranspose = math::inverseTranspose(w);
-		memset(&material, 0, sizeof(GPUMaterial));
 	}
 
 	//====================================================================================

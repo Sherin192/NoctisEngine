@@ -9,6 +9,7 @@ namespace noctis{
 	namespace rdr{
 		class RenderDevice;
 		class Texture;
+		class CubeMap;
 		class Model;
 	}
 
@@ -16,13 +17,14 @@ class AssetImporter
 {
 public:
 	
-	static AssetImporter& Instance(std::shared_ptr<rdr::RenderDevice>& renderDevice);
-
+	static AssetImporter& Instance();
+	void										Init(std::shared_ptr<rdr::RenderDevice>& renderDevice);
 	std::shared_ptr<rdr::Model>					LoadModel(std::filesystem::path);
 	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureUsage type);
+	std::shared_ptr<rdr::CubeMap>				LoadCubeMap(std::array<std::string, 6>& paths);
 
 private:
-	AssetImporter(std::shared_ptr<rdr::RenderDevice>& renderDevice);
+	AssetImporter();
 	std::unique_ptr<AssetImporterImpl>			m_pImpl;
 };
 }

@@ -21,6 +21,7 @@ struct vs_Input
 struct vs_Output
 {
 	float4 posH : SV_Position;
+	float3 texCoord : TEXCOORD;
 };
 
 
@@ -31,7 +32,8 @@ struct vs_Output
 vs_Output VS(vs_Input vin)
 {
 	vs_Output vout;
+	vout.texCoord = vin.position;
 	//Transform to homogeneous clip space.
-	vout.posH = mul(worldViewProj, float4(vin.position, 1.0f));	
+	vout.posH = mul(worldViewProj, float4(vin.position, 1.0f)).xyww;
 	return vout;
 }

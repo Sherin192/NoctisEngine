@@ -4,6 +4,7 @@
 #include "Renderer/NoctisTexture.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Model.h"
+#include "Renderer/NoctisCubeMap.h"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
@@ -20,19 +21,22 @@ class AssetImporterImpl
 {
 public:
 
-	std::shared_ptr<rdr::Model>					Load(std::filesystem::path);
+	std::shared_ptr<rdr::Model>				Load(std::filesystem::path);
 	void									ProcessNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&);
-	std::shared_ptr<rdr::Mesh>					ProcessMesh(const aiScene*, aiMesh*);
-	std::shared_ptr<rdr::Texture>				LoadMaterial(aiMaterial *, aiTextureType);
-	std::shared_ptr<rdr::Texture>				LoadTexture(std::filesystem::path, rdr::TextureUsage);
-	rdr::Material								FillMaterial(const aiMaterial*);
+	std::shared_ptr<rdr::Mesh>				ProcessMesh(const aiScene*, aiMesh*);
+	std::shared_ptr<rdr::Texture>			LoadMaterial(aiMaterial *, aiTextureType);
+	std::shared_ptr<rdr::Texture>			LoadTexture(std::filesystem::path, rdr::TextureUsage);
+	std::shared_ptr<rdr::CubeMap>			LoadCubeMap(std::array<std::string, 6>& paths);
+
+	std::shared_ptr<rdr::Material>		FillMaterial(const aiMaterial* mat);
+
 	void									SetRenderDevice(std::shared_ptr<rdr::RenderDevice>& renderDevice) { m_pRenderDevice = renderDevice; }
 #if _DEBUG
 	void									ShowMaterialInformations(const aiMaterial*);
 #endif 
 private:
-	std::shared_ptr<rdr::RenderDevice>			m_pRenderDevice;
-	std::filesystem::path						m_path;
+	std::shared_ptr<rdr::RenderDevice>		m_pRenderDevice;
+	std::filesystem::path					m_path;
 
 };
 
@@ -54,6 +58,14 @@ std::shared_ptr<rdr::Model> AssetImporter::LoadModel(std::filesystem::path fileP
 std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type)
 {
 	return m_pImpl->LoadTexture(filePath, type);
+}
+
+
+
+
+std::shared_ptr<rdr::CubeMap> AssetImporter::LoadCubeMap(std::array<std::string, 6>& paths)
+{
+	return m_pImpl->LoadCubeMap(paths);
 }
 
 
@@ -102,7 +114,7 @@ std::shared_ptr<rdr::Model> AssetImporterImpl::Load(std::filesystem::path filePa
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
 			std::string s = importer.GetErrorString();
-			std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+			Log(LogLevel::Error, "ERROR::ASSIMP::" + s);
 			return nullptr;
 		}
 
@@ -199,30 +211,23 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 		vertices.push_back(vertex);
 
 	}
-
-
 	//TODO: Move this functionality to an AssetImporter and store the textures in a TextureManager and let the mesh store pointers into the global array of textures.
 
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	ShowMaterialInformations(material);
-
-	rdr::Mesh::TextureArray  textures;
 
 	std::shared_ptr<rdr::Texture> diffuseMaps = LoadMaterial(material, aiTextureType_DIFFUSE);
 	std::shared_ptr<rdr::Texture> specularMaps = LoadMaterial(material, aiTextureType_SPECULAR);
 	std::shared_ptr<rdr::Texture> normalMaps = LoadMaterial(material, aiTextureType_NORMALS);
 	std::shared_ptr<rdr::Texture> heightMaps = LoadMaterial(material, aiTextureType_HEIGHT);
 
-	textures[rdr::TextureUsage::DIFFUSE] = diffuseMaps;
-	textures[rdr::TextureUsage::SPECULAR] = specularMaps;
-	textures[rdr::TextureUsage::NORMAL] = normalMaps;
-	textures[rdr::TextureUsage::HEIGHT] = heightMaps;
+	auto _mat = FillMaterial(material);
+	_mat->AddTexture(diffuseMaps);
+	_mat->AddTexture(specularMaps);
+	_mat->AddTexture(normalMaps);
+	_mat->AddTexture(heightMaps);
+	rdr::MaterialPool::Instance().AddMaterial(_mat->GetName(), _mat);
 
-	rdr::Material mesh_mat = FillMaterial(material);
-	std::for_each(textures.begin(), textures.end(), [&mesh_mat](auto& t) {
-		if (t)
-			mesh_mat.SetTextureBitField(t->GetType());
-		});
 	// process indices
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
@@ -233,9 +238,9 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 	}
 	std::string name = mesh->mName.C_Str();
 	//auto shared_mesh = AssetManager::Instance().AddMesh(std::make_shared<rdr::Mesh>(rdr::Mesh(m_pRenderDevice, name, vertices, indices, textures )));
-	auto shared_mesh = std::make_shared<rdr::Mesh>(rdr::Mesh(m_pRenderDevice, name, vertices, indices, textures));
-	shared_mesh->SetMaterial(mesh_mat);
+	auto shared_mesh = std::make_shared<rdr::Mesh>(rdr::Mesh(m_pRenderDevice, name, vertices, indices));
 	
+	shared_mesh->SetMaterial(_mat->GetName());
 	return shared_mesh;
 }
 
@@ -298,9 +303,34 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::pa
 
 
 
-rdr::Material AssetImporterImpl::FillMaterial(const aiMaterial* mat)
+
+
+std::shared_ptr<rdr::CubeMap> AssetImporterImpl::LoadCubeMap(std::array<std::string, 6>& paths)
 {
-	rdr::GPUMaterial material = rdr::Material::defaultMaterial;
+	unsigned char* data[6]{};
+	int width, height, nrChannels;
+
+	for (int i = 0; i < paths.size(); ++i)
+	{
+		data[i] = stbi_load(paths[i].c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+		if (!data[i])
+			Log(LogLevel::Error, "Cube Map texture(" + paths[i] + ") failed to load.");
+	}
+	auto cubeMap = std::make_shared<rdr::CubeMap>(m_pRenderDevice, data, paths, width, height, nrChannels);
+	for (auto d : data)
+	{
+		stbi_image_free(d);
+	}
+
+	return cubeMap;
+}
+
+
+
+std::shared_ptr<rdr::Material> AssetImporterImpl::FillMaterial(const aiMaterial* mat)
+{
+	static uint32_t index = 0;
+	auto material = rdr::PhongMaterial::defaultMaterial;
 	aiColor3D color;
 	if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_AMBIENT, color))
 	{
@@ -324,8 +354,19 @@ rdr::Material AssetImporterImpl::FillMaterial(const aiMaterial* mat)
 	{
 		material.specular.w = value;
 	}
-	return rdr::Material(material);
+
+	aiString name;
+	if (AI_SUCCESS != mat->Get(AI_MATKEY_NAME, name))
+	{
+		name = "material_" + index++;
+	}
+	return std::make_shared<rdr::PhongMaterial>(m_pRenderDevice, name.C_Str(), material);
 }
+
+
+
+
+
 
 #if _DEBUG
 void AssetImporterImpl::ShowMaterialInformations(const aiMaterial* mat)
@@ -367,14 +408,21 @@ void AssetImporterImpl::ShowMaterialInformations(const aiMaterial* mat)
 
 
 
-AssetImporter::AssetImporter(std::shared_ptr<rdr::RenderDevice>& renderDevice) : m_pImpl(new AssetImporterImpl)
+AssetImporter::AssetImporter() : m_pImpl(new AssetImporterImpl)
 {
-	m_pImpl->SetRenderDevice(renderDevice);
 };
 
-AssetImporter& AssetImporter::Instance(std::shared_ptr<rdr::RenderDevice>& renderDevice)
+
+void AssetImporter::Init(std::shared_ptr<rdr::RenderDevice>& renderDevice)
 {
-	static AssetImporter instance = AssetImporter(renderDevice);
+	m_pImpl->SetRenderDevice(renderDevice);
+}
+
+
+
+AssetImporter& AssetImporter::Instance()
+{
+	static AssetImporter instance = AssetImporter();
 	return instance;
 }
 }

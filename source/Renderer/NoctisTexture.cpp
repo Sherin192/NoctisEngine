@@ -11,7 +11,7 @@ namespace noctis::rdr
 
 
 	Texture::Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::string path, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type)
-		: m_usage(type), m_filePath(path), m_width(width), m_height(height), m_nrChannels(nrChannels), Base(renderDevice, data, path, width, height, nrChannels, type) {}
+		: m_usage(type), m_filePath(path), m_width(width), m_height(height), m_nrChannels(nrChannels), Base(renderDevice, data, width, height, nrChannels) {}
 
 
 

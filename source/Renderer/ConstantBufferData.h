@@ -1,6 +1,7 @@
 #ifndef CONSTANT_BUFFER_DATA_H
 #define CONSTANT_BUFFER_DATA_H
-#include "Material.h"
+//#include "Material.h"
+#include "NoctisRenderDevice.h"
 #include "Light.h"
 
 namespace noctis::rdr
@@ -8,9 +9,9 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 //		Forward Declarations:
 //------------------------------------------------------------------------------------
-	class Material;
+	//class Material;
 	struct Light;
-	struct GPUMaterial;
+	//struct GPUMaterial;
 //====================================================================================
 
 
@@ -25,10 +26,10 @@ namespace noctis::rdr
 		math::Nmat4 worldInvTranspose;
 		math::Nmat4	worldViewProj;
 
-		GPUMaterial material;
+		//GPUMaterial material;
 	
 		CBModelData() = default;
-		CBModelData(math::Nmat4 w, math::Nmat4 v, math::Nmat4 p, Material& mat);
+		CBModelData(math::Nmat4 w, math::Nmat4 v, math::Nmat4 p);
 		CBModelData(math::Nmat4 w, math::Nmat4 wvp);
 	};
 

@@ -5,7 +5,7 @@
 #include "NoctisBuffers.h"
 #include "NoctisTexture.h"
 #include "Vertex.h"
-
+#include "Material.h"
 //------------------------------------------------------------------------------------
 //		Forward Declarations:
 //------------------------------------------------------------------------------------
@@ -35,7 +35,6 @@ namespace noctis::rdr
 		using TextureArray = std::array<std::shared_ptr<Texture>, TextureUsage::COUNT>;
 
 		Mesh(std::shared_ptr<RenderDevice>&, std::string&, std::vector<Vertex>&, std::vector<unsigned>&);
-		Mesh(std::shared_ptr<RenderDevice>&, std::string&, std::vector<Vertex>&, std::vector<unsigned>&, TextureArray);
 
 		Mesh(const Mesh& other) = delete;
 		//TODO: rule of 5
@@ -46,18 +45,14 @@ namespace noctis::rdr
 		IndexBuffer<>&								GetIndexBuffer() noexcept { return m_indexBuffer; }
 
 		const std::string&							GetName() const noexcept { return m_name; }
-		Material&									GetMaterial() noexcept { return m_material; }
-		void										SetMaterial(Material mat) noexcept;
-		void										SetTexture(std::shared_ptr<Texture>& tex);
-		const TextureArray&							GetTextures() const noexcept { return m_textures; }
+		std::shared_ptr<Material>				GetMaterial() noexcept { return MaterialPool::Instance().GetMaterial(m_materialName); }
+		void										SetMaterial(const std::string& name) { m_materialName = name; }
+
 	private:
 		void										Setup(std::shared_ptr<RenderDevice>& renderDevice, std::vector<Vertex>& vertices, std::vector<unsigned>& indices);
 
 		std::string									m_name;
-		TextureArray								m_textures;
-		//TODO: This should be a material id
-		Material									m_material;
-
+		std::string									m_materialName;
 		VertexBuffer<Vertex>						m_vertexBuffer;
 		IndexBuffer<>								m_indexBuffer;
 

@@ -14,7 +14,7 @@ namespace noctis::rdr
 
 	class Texture;
 
-	enum TextureUsage : unsigned int { DIFFUSE = 0, SPECULAR, NORMAL, HEIGHT, COUNT, CUBE_MAP, UNSPECIFIED };
+	enum TextureUsage : unsigned int { DIFFUSE = 0, SPECULAR, NORMAL, HEIGHT, METALLIC, ROUGHNESS, COUNT, CUBE_MAP, UNSPECIFIED };
 
 	enum ComparisonFunc
 	{

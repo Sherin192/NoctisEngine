@@ -147,6 +147,7 @@ namespace noctis::rdr
 	template <typename ShaderType>
 	void Dx11Shader<ShaderType>::Init(std::shared_ptr<RenderDevice>& renderDevice)
 	{
+		using namespace std::string_literals;
 		ShaderType* shaderType = static_cast<ShaderType*>(this);
 		HRESULT hResult;
 
@@ -159,8 +160,9 @@ namespace noctis::rdr
 		if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
 		{
 			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VS", "vs_5_0", flags, 0, &m_pByteCode, &errorMessages);
+			
 			if (FAILED(hResult))
-				Log(LogLevel::Error, "Failed to compile Vertex Shader.\n", (char*)errorMessages->GetBufferPointer());
+				Log(LogLevel::Error, "Failed to compile Vertex Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
 
 			hResult = renderDevice->GetDevice()->CreateVertexShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 
@@ -168,8 +170,9 @@ namespace noctis::rdr
 		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
 		{
 			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PS", "ps_5_0", flags, 0, &m_pByteCode, &errorMessages);
+			
 			if (FAILED(hResult))
-				Log(LogLevel::Error, "Failed to compile Pixel Shader.\n", (char*)errorMessages->GetBufferPointer());
+				Log(LogLevel::Error, "Failed to compile Pixel Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
 			hResult = renderDevice->GetDevice()->CreatePixelShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 
 		}
