@@ -1,8 +1,15 @@
 //Predefined texture slots for a particular use.
 #define TEX_SLOT_DIFFUSE 	0
+#define TEX_SLOT_ALBEDO		0
 #define TEX_SLOT_SPECULAR 	1
+#define TEX_SLOT_METALLIC	1
 #define TEX_SLOT_NORMAL 	2
 #define TEX_SLOT_HEIGHT 	3
+#define TEX_SLOT_ROUGHNESS	3
+#define TEX_SLOT_OPACITY 	4
+#define TEX_SLOT_EMISSIVE 	5
+
+
 
 static const float PI = 3.141592;
 

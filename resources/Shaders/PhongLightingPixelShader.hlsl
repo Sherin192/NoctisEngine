@@ -34,6 +34,8 @@ cbuffer ConstantBufferMaterial : register(b2)
 Texture2D TexDiffuse : register(t0);
 Texture2D TexSpecular : register(t1);
 Texture2D TexNormal : register(t2);
+Texture2D TexOpacity : register(t4);
+Texture2D TexEmissive : register(t5);
 sampler Sampler : register(s0);
 
 
@@ -81,7 +83,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float4 ambient = dirLight.ambient;
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	
+	float4 emissive = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	//Sum the light contribution from each light source.
 	float4 Dp, Sp;
 	
@@ -95,13 +97,18 @@ float4 PS(ps_Input pin) : SV_TARGET
 		texDiffuse = TexDiffuse.Sample(Sampler, pin.texCoord);
 		if (texDiffuse.w < 0.5f)
 			discard;
-	 	mat.diffuse *= texDiffuse;
+	 	mat.diffuse = texDiffuse;
 	}
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_SPECULAR))
 	{
 		texSpecular = TexSpecular.Sample(Sampler, pin.texCoord);
-		mat.specular.xyz *= texSpecular.xyz;
+		mat.specular.xyz = texSpecular.xyz;
 	} 
+
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_EMISSIVE))
+	{
+		emissive = TexEmissive.Sample(Sampler, pin.texCoord);
+	}
 
 	CalculateDirectionalLight(mat, dirLight, normal, toEye, diffuse, spec);
 
@@ -116,11 +123,11 @@ float4 PS(ps_Input pin) : SV_TARGET
 		spec += Sp;
 	}
 
-	float4 litColor = ambient + diffuse * mat.diffuse + spec * mat.specular;
+	float4 litColor = emissive+ ambient + diffuse * mat.diffuse + spec * mat.specular;
 	
 	//Common to take alpha from diffuse materail.
 	litColor.a = mat.diffuse.w;
-	
+	litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0, 1.0, 1.0));
 	pow(litColor.rgb, float3(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f));
   return litColor;
 }

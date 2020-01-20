@@ -19,6 +19,7 @@ namespace noctis
 //==================================================================================================
 class AssetImporterImpl
 {
+	enum class MaterialRep {Legacy, PBR};
 public:
 
 	std::shared_ptr<rdr::Model>				Load(std::filesystem::path);
@@ -37,7 +38,7 @@ public:
 private:
 	std::shared_ptr<rdr::RenderDevice>		m_pRenderDevice;
 	std::filesystem::path					m_path;
-
+	MaterialRep								m_currentRep = MaterialRep::Legacy;
 };
 
 
@@ -86,6 +87,15 @@ static rdr::TextureUsage ConvertAssimpToEngineType(aiTextureType type)
 		break;
 	case aiTextureType_NORMALS:
 		return rdr::TextureUsage::NORMAL;
+	case aiTextureType_OPACITY:
+		return rdr::TextureUsage::OPACITY;
+	case aiTextureType_EMISSIVE:
+		return rdr::TextureUsage::EMISSIVE;
+	case aiTextureType_LIGHTMAP:
+		return rdr::TextureUsage::AMBIENT_OCCLUSION;
+	case aiTextureType_UNKNOWN:
+		//gltf models store metallic-roughness-ao map as one texture this will be stored in the metallic map.
+		return rdr::TextureUsage::METALLIC;
 	default:
 		assert(0);
 		return rdr::TextureUsage::UNSPECIFIED;
@@ -105,6 +115,10 @@ std::shared_ptr<rdr::Model> AssetImporterImpl::Load(std::filesystem::path filePa
 	if (std::filesystem::exists(filePath))
 	{
 		m_path = filePath;
+		if (filePath.extension() == ".gltf")
+			m_currentRep = MaterialRep::PBR;
+		else
+			m_currentRep = MaterialRep::Legacy;
 
 		Assimp::Importer importer;
 
@@ -220,12 +234,25 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 	std::shared_ptr<rdr::Texture> specularMaps = LoadMaterial(material, aiTextureType_SPECULAR);
 	std::shared_ptr<rdr::Texture> normalMaps = LoadMaterial(material, aiTextureType_NORMALS);
 	std::shared_ptr<rdr::Texture> heightMaps = LoadMaterial(material, aiTextureType_HEIGHT);
+	std::shared_ptr<rdr::Texture> opacityMap = LoadMaterial(material, aiTextureType_OPACITY);
+	std::shared_ptr<rdr::Texture> emissiveMap = LoadMaterial(material, aiTextureType_EMISSIVE);
+	std::shared_ptr<rdr::Texture> aOcclusionMap = LoadMaterial(material, aiTextureType_LIGHTMAP);
+	std::shared_ptr<rdr::Texture> shininessMap = LoadMaterial(material, aiTextureType_SHININESS);
+	std::shared_ptr<rdr::Texture> displacementMap = LoadMaterial(material, aiTextureType_DISPLACEMENT);
+	std::shared_ptr<rdr::Texture> reflectionMap = LoadMaterial(material, aiTextureType_REFLECTION);
+	std::shared_ptr<rdr::Texture> unknownMap;
+	if (m_currentRep == MaterialRep::PBR)
+		unknownMap = LoadMaterial(material, aiTextureType_UNKNOWN);
 
 	auto _mat = FillMaterial(material);
 	_mat->AddTexture(diffuseMaps);
 	_mat->AddTexture(specularMaps);
 	_mat->AddTexture(normalMaps);
 	_mat->AddTexture(heightMaps);
+	_mat->AddTexture(opacityMap);
+	_mat->AddTexture(emissiveMap);
+	_mat->AddTexture(aOcclusionMap);
+	_mat->AddTexture(unknownMap);
 	rdr::MaterialPool::Instance().AddMaterial(_mat->GetName(), _mat);
 
 	// process indices
@@ -256,13 +283,7 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadMaterial(aiMaterial *materi
 	using namespace std::literals::string_literals;
 	std::shared_ptr<rdr::Texture> texture;
 
-	//For now this will load one texture per type
-	//assert(material->GetTextureCount(type) == 1);
 
-	if (material->GetTextureCount(type) > 1)
-	{
-		assert(0);
-	}
 	if (material->GetTextureCount(type))
 	{
 		aiString aiPath;
@@ -291,7 +312,10 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::pa
 	if (!AssetManager::Instance().ContainsTexture(filePath.string()))
 	{
 		data = stbi_load(filePath.string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-
+		if (!data)
+		{
+			Log(LogLevel::Error, "Failed to load a texture at : " + filePath.string());
+		}
 		return AssetManager::Instance().AddTexture(std::make_shared<rdr::Texture>(m_pRenderDevice, data, filePath.string(), width, height, 4, type));
 	}
 	else
