@@ -37,11 +37,26 @@ namespace noctis
 		//Load textures for the model, this is done only for generated models.
 		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureUsage::DIFFUSE);
 		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureUsage::SPECULAR);
+		std::shared_ptr<Texture> crateEmissive = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\matrix.jpg", TextureUsage::EMISSIVE);
 		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureUsage::NORMAL);
 		crateMaterial->AddTexture(crateDiffuse);
 		crateMaterial->AddTexture(crateSpecular);
+		crateMaterial->AddTexture(crateEmissive);
 		crateMaterial->AddTexture(crateNormal);
+
+
+		std::string rustyMaterialName = "Rusty";
+		auto rustyMaterial = std::make_shared<PBRMaterial>(rustyMaterialName);
+		std::shared_ptr<Texture> rustyAlbedo = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_basecolor.png", TextureUsage::ALBEDO);
+		std::shared_ptr<Texture> rustyMetallic = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_metallic.png", TextureUsage::METALLIC);
+		std::shared_ptr<Texture> rustyRoughness = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_roughness.png", TextureUsage::ROUGHNESS);
+
+		rustyMaterial->AddTexture(rustyAlbedo);
+		rustyMaterial->AddTexture(rustyMetallic);
+		rustyMaterial->AddTexture(rustyRoughness);
+
 		MaterialPool::Instance().AddMaterial(crateMaterialName, crateMaterial);
+		MaterialPool::Instance().AddMaterial(rustyMaterialName, rustyMaterial);
 		//________________________________________________________________________________________________
 
 		//_______________________________________SHADER_SETUP_____________________________________________
@@ -80,13 +95,21 @@ namespace noctis
 		m_pPBRPipelinePass->AddShaders(m_pVShader, m_pPBRPShader);
 		m_pSkyboxPipelinePass->AddShaders(m_pSkyboxVShader, m_pSkyboxPShader);
 
-		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 5.0f, 0.0f), 0.2f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 10000.0f);
+		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 50.0f, 0.0f), 0.2f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 10000.0f);
 
 		//-------------------------------------------------------------------------------------------------------------------------------
+		m_pSpherePBR = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
+		Transform spherePBRTransform({ 50.0f, 50.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		//m_pSpherePBR->SetMaterial(rustyMaterialName, "Sphere");
+		m_pSpherePBR->SetMaterial(kDefaultPBRMaterial, "Sphere");
 
-		//m_pLord = AssetImporter::Instance(m_pRenderDevice).LoadModel("..\\resources\\Models\\Lord\\Full_low.fbx");
+		m_pSpherePBR->SetTransform(spherePBRTransform);
 
+		m_pSpherePhong = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
+		Transform spherePhongTransform({ 50.0f, 50.0f, 20.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		m_pSpherePhong->SetMaterial(kDefaultMaterial, "Sphere");
 
+		m_pSpherePhong->SetTransform(spherePhongTransform);
 
 		//-------------------------------------------------------------------------------------------------------------------------------
 		
@@ -104,20 +127,20 @@ namespace noctis
 		m_pCrate->SetTransform(crateTransform);
 
 		//m_pSphere = std::make_unique<Model>(m_pRenderDevice, sg::Shape::SPHERE);
-		m_pSphere = AssetImporter::Instance().LoadModel("..\\resources\\Models\\materialpreview-subdiv.obj");
-		std::shared_ptr<Texture> sphereDiffuse = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_basecolor.png", TextureUsage::DIFFUSE);
-		std::shared_ptr<Texture> sphereMetalness = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_metallic.png", TextureUsage::NORMAL);
-		std::shared_ptr<Texture> sphereRoughness = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_roughness.png", TextureUsage::SPECULAR);
+		m_pMaterialPreview = AssetImporter::Instance().LoadModel("..\\resources\\Models\\materialpreview-subdiv.obj");
+	
+		Transform sphereTransform({ 50.0f, 50.0f, -20.0f }, { 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
 
-		Transform sphereTransform({ 0.0f, 20.0f, 20.0f }, { 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
+		m_pMaterialPreview->SetTransform(sphereTransform);
 
-		m_pSphere->SetTransform(sphereTransform);
 
-		//m_pSphere->SetMaterial(pbrTest, "Cylinder.001_Cylinder.002");
-		m_pSphere->SetMaterial(kDefaultPBRMaterial, "Cylinder.001_Cylinder.002");
-		/*m_pSphere->SetTexture(sphereDiffuse, TextureUsage::DIFFUSE, "Cylinder.001_Cylinder.002");
-		m_pSphere->SetTexture(sphereMetalness, TextureUsage::NORMAL, "Cylinder.001_Cylinder.002");
-		m_pSphere->SetTexture(sphereRoughness, TextureUsage::SPECULAR, "Cylinder.001_Cylinder.002");*/
+		m_pMaterialPreview->SetMaterial(rustyMaterialName, "Cylinder.001_Cylinder.002");
+		//----------------------------------------------------------------------------------------------------------
+
+		m_pGLTFModel = AssetImporter::Instance().LoadModel("..\\resources\\Models\\door\\scene.gltf");
+
+
+
 
 		//___________________________________SPONZA_____________________________________________________________
 
@@ -129,8 +152,6 @@ namespace noctis
 		
 		//_______________________________________SKYBOX_________________________________________________________
 
-		//m_pSkybox = std::make_unique<Model>(m_pRenderDevice, sg::Shape::CUBE);
-
 		std::array<std::string, 6> cubeMapPaths{"..\\resources\\Models\\skybox\\right.jpg",
 												"..\\resources\\Models\\skybox\\left.jpg",
 												"..\\resources\\Models\\skybox\\top.jpg",
@@ -139,11 +160,7 @@ namespace noctis
 												"..\\resources\\Models\\skybox\\back.jpg" };
 
 		m_pSkybox = AssetImporter::Instance().LoadCubeMap(cubeMapPaths);
-		//Set textures previously loaded, this is also done only for generated models.
-		//m_pSkybox->SetTexture(cubeMap, sg::kShapeNameCube);
-
-		//m_pSkybox->SetTransform(Transform{});
-
+		
 		//______________________________________________________________________________________________________
 
 		DirectionalLight dirLight;
@@ -155,23 +172,23 @@ namespace noctis
 		cbFrameData.dirLight = dirLight;
 
 		PointLight pointLight;
-		pointLight.diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+		pointLight.diffuse = { 1.0f, 0.6f, 0.0f, 1.0f };
 		pointLight.specular = { 1.0f, 0.6f, 0.0f, 0.0f };
 		pointLight.attenuation = { 1.0f, 0.0022f, 0.00019f };
-		pointLight.position = { 0.0f, 0.0f, 30.0f };
+		pointLight.position = { 0.0f, 50.0f, 30.0f };
 		pointLight.enabled = 1;
 
 		cbFrameData.pointLights[0] = pointLight;
 
-		/*pointLight.position = { 0.0f, 0.0f, -30.0f };
+		pointLight.position = { 0.0f, 0.0f, -30.0f };
 
 		cbFrameData.pointLights[1] = pointLight;
 
-		pointLight.position = { 0.0f, 40.0f, 0.0f };
+		pointLight.position = { -20.0f, 40.0f, 0.0f };
 
-		cbFrameData.pointLights[2] = pointLight;*/
+		cbFrameData.pointLights[2] = pointLight;
 
-		for (int i = 1; i < 8; ++i)
+		for (int i = 3; i < 8; ++i)
 		{
 			pointLight.enabled = 0;
 
@@ -214,8 +231,9 @@ namespace noctis
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
 		m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
-		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSphere, *m_camera);
-		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pSphere, *m_camera);
+		m_pPipelinePass->Render(m_pRenderDevice, *m_pSpherePhong, *m_camera);
+		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pSpherePBR, *m_camera);
+		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pMaterialPreview, *m_camera);
 
 		m_pSkyboxPipelinePass->Render(m_pRenderDevice, *m_pSkybox, *m_camera);
 
@@ -260,7 +278,7 @@ namespace noctis
 		ImGui::SliderFloat3("Attenuation", &cbFrameData.pointLights[selected_light].attenuation.x, 0.0f, 1.0f);
 		ImGui::Checkbox("Enable", (bool*)&cbFrameData.pointLights[selected_light].enabled);
 		//TODO: Need a better way of exposing these walues to the UI.
-		auto mat = dynamic_cast<PBRMaterial*>(&*m_pSphere->GetMaterial("Cylinder.001_Cylinder.002"));
+		auto mat = dynamic_cast<PBRMaterial*>(&*m_pSpherePBR->GetMaterial("Sphere"));
 		ImGui::SliderFloat("Metalness", &mat->GetData().metallic, 0.0f, 1.0f);
 		ImGui::SliderFloat("Roughness", &mat->GetData().roughness, 0.05f, 1.0f);
 		mat->Update(m_pRenderDevice);

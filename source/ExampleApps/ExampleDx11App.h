@@ -37,8 +37,10 @@ namespace rdr{
 		std::shared_ptr<rdr::Model>				m_pSkull;
 		std::unique_ptr<rdr::Model>				m_pCrate;
 		std::shared_ptr<rdr::Model>				m_pSponza;
-		std::shared_ptr<rdr::Model>				m_pSphere;
-		std::shared_ptr<rdr::Model>				m_pLord;
+		std::shared_ptr<rdr::Model>				m_pSpherePBR;
+		std::shared_ptr<rdr::Model>				m_pSpherePhong;
+		std::shared_ptr<rdr::Model>				m_pMaterialPreview;
+		std::shared_ptr<rdr::Model>				m_pGLTFModel;
 
 		std::shared_ptr<rdr::CubeMap>			m_pSkybox;
 		std::shared_ptr<Camera>					m_camera;

@@ -31,10 +31,12 @@ cbuffer ConstantBufferMaterial : register(b2)
 	//----------------------------------
 };
 
-Texture2D TexDiffuse : register(t0);
-Texture2D TexSpecular : register(t1);
-Texture2D TexNormal : register(t2);
-sampler Sampler : register(s0);
+Texture2D TexAlbedo		: register(t0);
+Texture2D TexMetallic	: register(t1);
+Texture2D TexNormal		: register(t2); //TODO add normal mapping.
+Texture2D TexRoughness	: register(t3);
+
+sampler Sampler			: register(s0);
 
 
 struct ps_Input
@@ -83,23 +85,23 @@ float3 fresnelSchlick(float3 F0, float cosTheta)
 float4 PS(ps_Input pin) : SV_TARGET
 {
 	float4 albedo = material.albedo;
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_DIFFUSE))
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_ALBEDO))
 	{
-		albedo = TexDiffuse.Sample(Sampler, pin.texCoord);
+		albedo = TexAlbedo.Sample(Sampler, pin.texCoord);
 		if (albedo.w < 0.5f)
 			discard;
 	}
 	float metalness = material.metallic;
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_METALLIC))
 	{
-		metalness = TexNormal.Sample(Sampler, pin.texCoord).x;
+		metalness = TexMetallic.Sample(Sampler, pin.texCoord).x;
 		//if (metalness.w < 0.5f)
 		//	discard;
 	}
 	float roughness = material.roughness;
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_SPECULAR))
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_ROUGHNESS))
 	{
-		roughness = TexSpecular.Sample(Sampler, pin.texCoord).x;
+		roughness = TexRoughness.Sample(Sampler, pin.texCoord).x;
 		//if (metalness.w < 0.5f)
 		//	discard;
 	}

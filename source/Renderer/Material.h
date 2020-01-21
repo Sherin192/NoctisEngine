@@ -8,7 +8,7 @@ namespace noctis::rdr
 	constexpr auto kDefaultMaterial = "_DefaultMaterial";
 	constexpr auto kDefaultPBRMaterial = "_DefaultPBRMaterial";
 //------------------------------------------------------------------------------------
-//		Material: 
+//		Material: Base class for all materials
 //------------------------------------------------------------------------------------
 class Material
 {
@@ -28,7 +28,9 @@ public:
 
 
 
-
+//------------------------------------------------------------------------------------
+//		PhongMaterial: 
+//------------------------------------------------------------------------------------
 class PhongMaterial : public Material
 {
 	//------------------------------------------------------------------------------------
@@ -78,12 +80,16 @@ private:
 	GPUMaterial					m_material;
 	
 	std::array<std::shared_ptr<Texture>, TextureUsage::COUNT> m_textures;
-	std::shared_ptr<Texture>	m_diffuse;
-	std::shared_ptr<Texture>	m_specular;
-	std::shared_ptr<Texture>	m_normal;
-	std::shared_ptr<Texture>	m_height;
 };
+//====================================================================================
 
+
+
+
+
+//------------------------------------------------------------------------------------
+//		PBRMaterial: Base class for all materials
+//------------------------------------------------------------------------------------
 class PBRMaterial : public Material
 {
 	//------------------------------------------------------------------------------------
@@ -100,31 +106,15 @@ class PBRMaterial : public Material
 	};												// 32 bytes total
 public:
 	PBRMaterial() : Material(kDefaultPBRMaterial), m_material(defaultMaterial) {}
+	PBRMaterial(const std::string& name) : Material(name), m_material(defaultMaterial) {}
 	PBRMaterial(std::shared_ptr<RenderDevice>& renderDevice, const std::string& name, PBRMaterialData& material) 
 		: Material(name), m_material(material) 
 	{ 
 		m_cbuffer.Init(renderDevice, true, &m_material); 
 	};
-
-	PBRMaterial& operator= (PBRMaterial& other)
-	{
-		m_material = other.m_material;
-		m_albedo = other.m_albedo;
-		m_metallic = other.m_metallic;
-		m_roughtness = other.m_roughtness;
-		return *this;
-	}
-
-	void SetAlbedo(math::Nvec4 color) noexcept { m_material.albedo = color; }
-	void SetMetallic(float value) noexcept { m_material.metallic = value; }
-	void SetRoughtness(float value) noexcept { m_material.roughness = value; }
-	void SetAlbedoTexture(std::shared_ptr<Texture> albedo) noexcept { m_albedo = albedo; SetTextureBitField(TextureUsage::DIFFUSE); }
-	void SetMetallicTexture(std::shared_ptr<Texture> metallic) noexcept { m_metallic = metallic; SetTextureBitField(TextureUsage::NORMAL); }
-	void SetRoughtnessTexture(std::shared_ptr<Texture> roughtness) noexcept { m_roughtness = roughtness; SetTextureBitField(TextureUsage::SPECULAR); }
-	void Update(std::shared_ptr<RenderDevice> renderDevice) {
-		m_cbuffer.Update(renderDevice, m_material);
-	}
-	void Bind(std::shared_ptr<RenderDevice> renderDevice) { m_cbuffer.Bind(renderDevice, 2); }
+	void AddTexture(std::shared_ptr<Texture> texture);
+	void Update(std::shared_ptr<RenderDevice> renderDevice) { m_cbuffer.Update(renderDevice, m_material); }
+	void Bind(std::shared_ptr<RenderDevice> renderDevice);
 	auto& GetData() noexcept { return m_material; }
 	static PBRMaterialData			defaultMaterial;
 
@@ -132,12 +122,19 @@ private:
 	void SetTextureBitField(int texture) noexcept { m_material.textureBitField |= 1 << texture;; }
 	ConstantBuffer<PBRMaterialData>	m_cbuffer;
 	PBRMaterialData					m_material;
-	std::shared_ptr<Texture>		m_albedo;
-	std::shared_ptr<Texture>		m_metallic;
-	std::shared_ptr<Texture>		m_roughtness;
+
+	std::array<std::shared_ptr<Texture>, TextureUsage::COUNT> m_textures;
 };
+//====================================================================================
 
 
+
+
+
+//------------------------------------------------------------------------------------
+//		MaterialPool: All materials have to be added to the Pool and the name 
+//					  of the material should be used to access it.
+//------------------------------------------------------------------------------------
 class MaterialPool
 {
 public:
@@ -177,7 +174,6 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<Material>> m_materials;
 	std::shared_ptr<RenderDevice> m_pRenderDevice;
 };
-
 //====================================================================================
 }	//noctis::rdr
 #endif //_MATERIAL_H
