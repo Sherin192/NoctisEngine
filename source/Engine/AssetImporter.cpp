@@ -23,19 +23,22 @@ class AssetImporterImpl
 public:
 
 	std::shared_ptr<rdr::Model>				Load(std::filesystem::path);
-	void									ProcessNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&);
+	void									ProcessRootNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&);
+	void									ProcessNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&, rdr::Node*);
 	std::shared_ptr<rdr::Mesh>				ProcessMesh(const aiScene*, aiMesh*);
 	std::shared_ptr<rdr::Texture>			LoadMaterial(aiMaterial *, aiTextureType);
 	std::shared_ptr<rdr::Texture>			LoadTexture(std::filesystem::path, rdr::TextureUsage);
 	std::shared_ptr<rdr::CubeMap>			LoadCubeMap(std::array<std::string, 6>& paths);
 
-	std::shared_ptr<rdr::Material>		FillMaterial(const aiMaterial* mat);
+	std::shared_ptr<rdr::Material>			FillMaterial(const aiMaterial* mat);
 
 	void									SetRenderDevice(std::shared_ptr<rdr::RenderDevice>& renderDevice) { m_pRenderDevice = renderDevice; }
 #if _DEBUG
 	void									ShowMaterialInformations(const aiMaterial*);
 #endif 
 private:
+	rdr::TextureUsage						ConvertAssimpToEngineType(aiTextureType type);
+
 	std::shared_ptr<rdr::RenderDevice>		m_pRenderDevice;
 	std::filesystem::path					m_path;
 	MaterialRep								m_currentRep = MaterialRep::Legacy;
@@ -72,7 +75,7 @@ std::shared_ptr<rdr::CubeMap> AssetImporter::LoadCubeMap(std::array<std::string,
 
 
 
-static rdr::TextureUsage ConvertAssimpToEngineType(aiTextureType type)
+rdr::TextureUsage AssetImporterImpl::ConvertAssimpToEngineType(aiTextureType type)
 {
 	switch (type)
 	{
@@ -87,15 +90,21 @@ static rdr::TextureUsage ConvertAssimpToEngineType(aiTextureType type)
 		break;
 	case aiTextureType_NORMALS:
 		return rdr::TextureUsage::NORMAL;
+		break;
 	case aiTextureType_OPACITY:
 		return rdr::TextureUsage::OPACITY;
+		break;
 	case aiTextureType_EMISSIVE:
 		return rdr::TextureUsage::EMISSIVE;
+		break;
 	case aiTextureType_LIGHTMAP:
-		return rdr::TextureUsage::AMBIENT_OCCLUSION;
+
+		return m_currentRep == MaterialRep::PBR? rdr::TextureUsage::METALLIC : rdr::TextureUsage::AMBIENT_OCCLUSION;
+		break;
 	case aiTextureType_UNKNOWN:
 		//gltf models store metallic-roughness-ao map as one texture this will be stored in the metallic map.
 		return rdr::TextureUsage::METALLIC;
+		break;
 	default:
 		assert(0);
 		return rdr::TextureUsage::UNSPECIFIED;
@@ -133,7 +142,7 @@ std::shared_ptr<rdr::Model> AssetImporterImpl::Load(std::filesystem::path filePa
 		}
 
 		auto model = std::make_shared<rdr::Model>();
-		ProcessNode(scene, scene->mRootNode, model);
+		ProcessRootNode(scene, scene->mRootNode, model);
 
 		return model;
 	}
@@ -148,21 +157,57 @@ std::shared_ptr<rdr::Model> AssetImporterImpl::Load(std::filesystem::path filePa
 
 
 
+void AssetImporterImpl::ProcessRootNode(const aiScene* scene, aiNode* node, std::shared_ptr<rdr::Model>& model)
+{
+	auto transformMatrix = reinterpret_cast<math::Nmat4*>(&node->mTransformation);
+	Transform transform(*transformMatrix);
+	model->m_pRootNode = std::make_unique<rdr::Node>(transform);
+
+	unsigned int index = 0;
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		model->m_meshes.push_back(ProcessMesh(scene, mesh));
+		model->m_pRootNode->m_meshes.push_back(index++);
+	}
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		ProcessNode(scene, node->mChildren[i], model, model->m_pRootNode.get());
+	}
+}
+
+
+
+
+
 //==================================================================================================
 // ProcessNode : Fills the model with all the meshes from a given node then it goes to the child
 //				 node recursively.
 //==================================================================================================
-void AssetImporterImpl::ProcessNode(const aiScene* scene, aiNode* node, std::shared_ptr<rdr::Model>& model)
+void AssetImporterImpl::ProcessNode(const aiScene* scene, aiNode* node, std::shared_ptr<rdr::Model>& model, rdr::Node* root)
 {
+	//GLTF files store matices in column major, GLM also stores them in column major and Nmat4 follows as well.
+	//However, assimps internal representation of the matrix is row major hence it needs to be transposed.
+	auto transformMatrix = math::transpose(*reinterpret_cast<math::Nmat4*>(&node->mTransformation));
+	Transform transform(transformMatrix);
+	root->m_pNodes.push_back(std::move(std::make_unique<rdr::Node>(transform)));
+	auto nodeIndex = root->m_pNodes.size() - 1;
+	unsigned int index = model->m_meshes.size();
+
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 		model->m_meshes.push_back(ProcessMesh(scene, mesh));
+		root->m_pNodes[nodeIndex]->m_meshes.push_back(index++);
 	}
-	
-	for (unsigned int i = 0; i < node->mNumChildren; i++)
-	{
-		ProcessNode(scene, node->mChildren[i], model);
+
+	if (node->mNumChildren)
+	{	
+		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		{
+			//TODO: This should be made into a method
+			ProcessNode(scene, node->mChildren[i], model, root->m_pNodes[nodeIndex].get());
+		}
 	}
 }
 
@@ -354,37 +399,50 @@ std::shared_ptr<rdr::CubeMap> AssetImporterImpl::LoadCubeMap(std::array<std::str
 std::shared_ptr<rdr::Material> AssetImporterImpl::FillMaterial(const aiMaterial* mat)
 {
 	static uint32_t index = 0;
-	auto material = rdr::PhongMaterial::defaultMaterial;
-	aiColor3D color;
-	if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_AMBIENT, color))
-	{
-		material.ambient = { color.r, color.g, color.b, 1.0f };
-	}
-	if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, color))
-	{
-		material.diffuse = { color.r, color.g, color.b, 1.0f };
-	}
-	if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_SPECULAR, color))
-	{
-		material.specular = { color.r, color.g, color.b, 1.0f };
-	}
-	if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_REFLECTIVE, color))
-	{
-		material.reflect = { color.r, color.g, color.b, 1.0f };
-	}
-
-	float value;
-	if (AI_SUCCESS == mat->Get(AI_MATKEY_SHININESS_STRENGTH, value))
-	{
-		material.specular.w = value;
-	}
-
 	aiString name;
 	if (AI_SUCCESS != mat->Get(AI_MATKEY_NAME, name))
 	{
 		name = "material_" + index++;
 	}
-	return std::make_shared<rdr::PhongMaterial>(m_pRenderDevice, name.C_Str(), material);
+	if (m_currentRep == MaterialRep::PBR)
+	{
+		auto material = rdr::PBRMaterial::defaultMaterial;
+		aiColor3D color;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+		{
+			material.albedo = { color.r, color.g, color.b, 1.0f };
+		}
+		return std::make_shared<rdr::PBRMaterial>(m_pRenderDevice, name.C_Str(), material);
+	}
+	else
+	{
+		auto material = rdr::PhongMaterial::defaultMaterial;
+		aiColor3D color;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_AMBIENT, color))
+		{
+			material.ambient = { color.r, color.g, color.b, 1.0f };
+		}
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+		{
+			material.diffuse = { color.r, color.g, color.b, 1.0f };
+		}
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_SPECULAR, color))
+		{
+			material.specular = { color.r, color.g, color.b, 1.0f };
+		}
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_REFLECTIVE, color))
+		{
+			material.reflect = { color.r, color.g, color.b, 1.0f };
+		}
+
+		float value;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_SHININESS_STRENGTH, value))
+		{
+			material.specular.w = value;
+		}
+		return std::make_shared<rdr::PhongMaterial>(m_pRenderDevice, name.C_Str(), material);
+	}
+	
 }
 
 

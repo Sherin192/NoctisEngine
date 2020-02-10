@@ -26,7 +26,7 @@ namespace noctis::math
 
  Nmat4 rotate(const Nmat4& m, const Nvec3& t)
 {
-	return Nmat4(glm::rotate(glm::rotate(glm::rotate(m.data, t.elem[0], { 1.0f, 0.0f, 0.0f }), t.elem[1], { 0.0f, 1.0f, 0.0f }), t.elem[2], { 0.0f, 0.0f, 1.0f }));
+	return Nmat4(glm::rotate(glm::rotate(glm::rotate(m.data, t.elem[2], { 0.0f, 0.0f, 1.0f }), t.elem[1], { 0.0f, 1.0f, 0.0f }), t.elem[0], { 1.0f, 0.0f, 0.0f }));
 }
 
  Nmat4 scale(const Nmat4& m, const Nvec3& s)

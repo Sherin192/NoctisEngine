@@ -14,7 +14,7 @@ namespace noctis::rdr
 {
 
 Model::Model(std::shared_ptr<RenderDevice>& renderDevice, sg::Shape shape)
-	: m_cbuffer(renderDevice), m_transform(), m_meshes()
+	: m_cbuffer(renderDevice), m_transform(), m_meshes(), m_pRootNode(new Node)
 {
 	Generate(renderDevice, shape);
 }
@@ -45,7 +45,7 @@ const Transform& Model::GetTransform() const noexcept { return m_transform; }
 
 
 
-void Model::SetTransform(Transform& t) noexcept { m_transform.Set(t); }
+void Model::SetTransform(Transform& t) noexcept { m_transform.Set(t); m_pRootNode->m_transform.Set(t); }
 
 
 
@@ -53,23 +53,31 @@ void Model::SetTransform(Transform& t) noexcept { m_transform.Set(t); }
 
 void Model::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 {
-	math::Nmat4 WVP = cam.GetProj() * cam.GetView() * m_transform.AsMatrix();
-	CBModelData cbData(m_transform.AsMatrix(), WVP);
-	//renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
+	RenderNode(renderDevice, m_pRootNode.get(), cam, Transform());
+}
 
-	//renderDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	for (auto& mesh : m_meshes)
+void Model::RenderNode(std::shared_ptr<RenderDevice>& renderDevice, Node* node, Camera& cam, Transform& accumulatedTransform)
+{
+	auto NodeTransform = Transform(accumulatedTransform.AsMatrix() * node->m_transform.AsMatrix());
+	math::Nmat4 WVP = cam.GetProj() * cam.GetView() * NodeTransform.AsMatrix();
+	CBModelData cbData(NodeTransform.AsMatrix(), WVP);
+
+	for (auto i : node->m_meshes)
 	{
-		//cbData.material = mesh->GetMaterial().GetGPUMaterial();
-
 		//Update and bind Model constant buffer
 		m_cbuffer.Update(renderDevice, cbData);
 		m_cbuffer.Bind(renderDevice, 0);
 
-		mesh->Render(renderDevice);
+		m_meshes[i]->Render(renderDevice);
+	}
+
+	for (auto& c : node->m_pNodes)
+	{
+		RenderNode(renderDevice, c.get(), cam, NodeTransform);
 	}
 }
+
 
 
 

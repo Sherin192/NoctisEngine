@@ -50,10 +50,12 @@ namespace noctis
 		std::shared_ptr<Texture> rustyAlbedo = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_basecolor.png", TextureUsage::ALBEDO);
 		std::shared_ptr<Texture> rustyMetallic = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_metallic.png", TextureUsage::METALLIC);
 		std::shared_ptr<Texture> rustyRoughness = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_roughness.png", TextureUsage::ROUGHNESS);
+		std::shared_ptr<Texture> rustyNormal = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\PBR\\rustediron2_normal.png", TextureUsage::NORMAL);
 
 		rustyMaterial->AddTexture(rustyAlbedo);
 		rustyMaterial->AddTexture(rustyMetallic);
 		rustyMaterial->AddTexture(rustyRoughness);
+		rustyMaterial->AddTexture(rustyNormal);
 
 		MaterialPool::Instance().AddMaterial(crateMaterialName, crateMaterial);
 		MaterialPool::Instance().AddMaterial(rustyMaterialName, rustyMaterial);
@@ -138,6 +140,8 @@ namespace noctis
 		//----------------------------------------------------------------------------------------------------------
 
 		m_pGLTFModel = AssetImporter::Instance().LoadModel("..\\resources\\Models\\door\\scene.gltf");
+		Transform GLTFModelTransform({ 0.0f, 00.0f, 0.0f }, { kPI * 3.0f/2.0f, 0.0f, 0.0f}, { 10.0f, 10.0f, 10.0f });
+		m_pGLTFModel->SetTransform(GLTFModelTransform);
 
 
 
@@ -145,9 +149,9 @@ namespace noctis
 		//___________________________________SPONZA_____________________________________________________________
 
 		//TODO:Give the model the default transform.
-		m_pSponza = AssetImporter::Instance().LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
+		/*m_pSponza = AssetImporter::Instance().LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
 		Transform sponzaTransform({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-		m_pSponza->SetTransform(sponzaTransform);
+		m_pSponza->SetTransform(sponzaTransform);*/
 		//______________________________________________________________________________________________________
 		
 		//_______________________________________SKYBOX_________________________________________________________
@@ -228,13 +232,13 @@ namespace noctis
 		m_pConstantPerFrame->Bind(m_pRenderDevice, 1);
 		//-----------------------------------------------------
 
-		m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
-		m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
-		m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
-		m_pPipelinePass->Render(m_pRenderDevice, *m_pSpherePhong, *m_camera);
-		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pSpherePBR, *m_camera);
+		//m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
+		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
+		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
+		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSpherePhong, *m_camera);
+		//m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pSpherePBR, *m_camera);
 		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pMaterialPreview, *m_camera);
-
+		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pGLTFModel, *m_camera);
 		m_pSkyboxPipelinePass->Render(m_pRenderDevice, *m_pSkybox, *m_camera);
 
 
@@ -268,9 +272,9 @@ namespace noctis
 		ImGui::Begin("Lights");
 		ImGui::Text("Directional Light");
 		ImGui::SliderFloat3("Direction", &cbFrameData.dirLight.direction.x, -1.0f, 1.0f);
-		ImGui::SliderFloat3("Global ambient", &cbFrameData.dirLight.ambient.x, 0.0f, 1.0f);
-		ImGui::SliderFloat3("Directional Diffuse", &cbFrameData.dirLight.diffuse.x, 0.0f, 1.0f);
-		ImGui::SliderFloat3("SpecularDir", &cbFrameData.dirLight.specular.x, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Global ambient", &cbFrameData.dirLight.ambient.x, 0.0f, 10.0f);
+		ImGui::SliderFloat3("Directional Diffuse", &cbFrameData.dirLight.diffuse.x, 0.0f, 10.0f);
+		ImGui::SliderFloat3("SpecularDir", &cbFrameData.dirLight.specular.x, 0.0f, 10.0f);
 		ImGui::Text("Point Lights");
 		ImGui::SliderFloat3("Position", &cbFrameData.pointLights[selected_light].position.x, -500.0f, 500.0f);
 		ImGui::SliderFloat3("Diffuse", &cbFrameData.pointLights[selected_light].diffuse.x, 0.0f, 1.0f);
@@ -281,6 +285,14 @@ namespace noctis
 		auto mat = dynamic_cast<PBRMaterial*>(&*m_pSpherePBR->GetMaterial("Sphere"));
 		ImGui::SliderFloat("Metalness", &mat->GetData().metallic, 0.0f, 1.0f);
 		ImGui::SliderFloat("Roughness", &mat->GetData().roughness, 0.05f, 1.0f);
+
+		auto& GLTFModelTransform = m_pGLTFModel->GetRootNode()->m_transform;
+
+		ImGui::Text("GLTF Model data");
+		ImGui::SliderFloat3("PositionModel", &GLTFModelTransform.position.x, -1000.0f, 1000.0f);
+		ImGui::SliderFloat3("RotationModel", &GLTFModelTransform.rotation.x, 0.0f, 7.0f);
+		ImGui::SliderFloat3("ScaleModel", &GLTFModelTransform.scale.x, -10.0f, 100.0f);
+
 		mat->Update(m_pRenderDevice);
 
 		ImGui::End();
