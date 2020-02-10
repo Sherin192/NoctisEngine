@@ -84,6 +84,20 @@ float3 fresnelSchlick(float3 F0, float cosTheta)
 
 float4 PS(ps_Input pin) : SV_TARGET
 {
+	//Interpolating normal can unnormalize it, so normalize it.
+	float3 normal = normalize(pin.normalW);
+
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
+	{
+		normal = TexNormal.Sample(Sampler, pin.texCoord).rgb;
+		normal = normalize(normal * 2.0f - 1.0f);
+		//mul(x, y) if x is a vector it is treated as row-major, if y is a vector is treated as column-major.
+		//Since TBN was creaded with T, B and N as rows it is row-major hence the below multiplication ca be done this way as well:
+		//mul(transpose(pin.TBN), normal) 
+		normal = normalize(mul(normal, pin.TBN).xyz);
+	}
+
+	float ao = 1.0f;
 	float4 albedo = material.albedo;
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_ALBEDO))
 	{
@@ -105,10 +119,14 @@ float4 PS(ps_Input pin) : SV_TARGET
 		//if (metalness.w < 0.5f)
 		//	discard;
 	}
+	else
+	{
+		roughness = TexMetallic.Sample(Sampler, pin.texCoord).y;
+	}
 	// Outgoing light direction (vector from world-space fragment position to the "eye").
 	float3 Lo = normalize(eyePos - pin.posW);
 	
-	float3 N = normalize(pin.normalW);
+	float3 N = normal;// normalize(pin.normalW);
 	// Angle between surface normal and outgoing light direction.
 	float cosLo = max(0.0, dot(N, Lo));
 		
@@ -202,7 +220,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float3 ambient = float3(0.03, 0.03, 0.03) * albedo;
 
 	float3 color = ambient + directLighting;
-
+	color.rgb = color.rgb / (color.rgb + float3(1.0, 1.0, 1.0));
 	color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
 	return float4(color, 1.0f);
