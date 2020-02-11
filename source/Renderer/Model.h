@@ -60,10 +60,13 @@ class Node
 public:
 	Node() : m_transform() {}
 	Node(Transform& transform) : m_transform(transform) {}
+	Node(Transform& transform, Model* owner) : m_transform(transform), m_pOwner(owner) {}
 //private:
+	std::string									m_name;
 	std::vector<std::unique_ptr<Node>>			m_pNodes;
 	std::vector<uint32_t>						m_meshes;
 	Transform									m_transform;
+	Model*										m_pOwner;
 
 	friend Model;
 };
