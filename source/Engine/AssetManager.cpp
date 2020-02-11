@@ -22,6 +22,16 @@ std::shared_ptr<rdr::Mesh> AssetManager::AddMesh(std::shared_ptr<rdr::Mesh> mesh
 }
 
 
+uint8_t AssetManager::AddName(std::string name)
+{
+	auto [iter, inserted] = m_names.insert({ name, 0 });
+	if (!inserted)
+	{
+		iter->second++;
+	}
+	return iter->second;
+}
+
 bool AssetManager::ContainsTexture(std::string path)
 {
 	auto iter = m_textures.find(path);

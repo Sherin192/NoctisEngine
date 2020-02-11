@@ -37,6 +37,7 @@ public:
 	void									ShowMaterialInformations(const aiMaterial*);
 #endif 
 private:
+	std::string								GetNodeName(aiNode*);
 	rdr::TextureUsage						ConvertAssimpToEngineType(aiTextureType type);
 
 	std::shared_ptr<rdr::RenderDevice>		m_pRenderDevice;
@@ -154,6 +155,18 @@ std::shared_ptr<rdr::Model> AssetImporterImpl::Load(std::filesystem::path filePa
 }
 
 
+std::string AssetImporterImpl::GetNodeName(aiNode* node)
+{
+	std::string name = node->mName.C_Str();
+	if (!node->mNumMeshes)
+		return name;  //This probably could be an empty strign as well.
+	auto count = AssetManager::Instance().AddName(name);
+	if (count)
+		return name + " (" + std::to_string(count) + ")";
+	else
+		return name;
+
+}
 
 
 
@@ -161,8 +174,8 @@ void AssetImporterImpl::ProcessRootNode(const aiScene* scene, aiNode* node, std:
 {
 	auto transformMatrix = reinterpret_cast<math::Nmat4*>(&node->mTransformation);
 	Transform transform(*transformMatrix);
-	model->m_pRootNode = std::make_unique<rdr::Node>(transform);
-
+	model->m_pRootNode = std::make_unique<rdr::Node>(transform, model.get());
+	model->m_pRootNode->m_name = GetNodeName(node);
 	unsigned int index = 0;
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
@@ -186,23 +199,30 @@ void AssetImporterImpl::ProcessRootNode(const aiScene* scene, aiNode* node, std:
 //==================================================================================================
 void AssetImporterImpl::ProcessNode(const aiScene* scene, aiNode* node, std::shared_ptr<rdr::Model>& model, rdr::Node* root)
 {
-	//GLTF files store matices in column major, GLM also stores them in column major and Nmat4 follows as well.
-	//However, assimps internal representation of the matrix is row major hence it needs to be transposed.
-	auto transformMatrix = math::transpose(*reinterpret_cast<math::Nmat4*>(&node->mTransformation));
-	Transform transform(transformMatrix);
-	root->m_pNodes.push_back(std::move(std::make_unique<rdr::Node>(transform)));
-	auto nodeIndex = root->m_pNodes.size() - 1;
+	if (!node->mNumMeshes && !node->mNumChildren)
+		return;
+
+	root->m_name = GetNodeName(node);
+
 	unsigned int index = model->m_meshes.size();
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
-		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		model->m_meshes.push_back(ProcessMesh(scene, mesh));
-		root->m_pNodes[nodeIndex]->m_meshes.push_back(index++);
+		root->m_meshes.push_back(index++);
 	}
 
 	if (node->mNumChildren)
-	{	
+	{
+		//GLTF files store matices in column major, GLM also stores them in column major and Nmat4 follows as well.
+		//However, assimps internal representation of the matrix is row major hence it needs to be transposed.
+		auto transformMatrix = math::transpose(*reinterpret_cast<math::Nmat4*>(&node->mTransformation));
+		Transform transform(transformMatrix);
+
+		root->m_pNodes.push_back(std::move(std::make_unique<rdr::Node>(transform, model.get())));
+		auto nodeIndex = root->m_pNodes.size() - 1;
+
 		for (unsigned int i = 0; i < node->mNumChildren; i++)
 		{
 			//TODO: This should be made into a method
