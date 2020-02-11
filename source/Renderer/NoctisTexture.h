@@ -18,7 +18,8 @@ namespace noctis::rdr
 		Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::string path, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type);
 		TextureUsage GetType()	 const noexcept;
 		const std::string& GetFilePath() const	noexcept;
-
+		unsigned int GetWidth() const noexcept { return m_width; }
+		unsigned int GetHeight() const noexcept { return m_height; }
 	protected:
 		TextureUsage											m_usage;
 		std::string												m_filePath;
