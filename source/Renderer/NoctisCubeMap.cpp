@@ -47,6 +47,9 @@ void CubeMap::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 
 	renderDevice->GetDeviceContext()->DrawIndexed(m_indexBuffer.Size(), 0, 0);
 
+	ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+	renderDevice->GetDeviceContext()->PSSetShaderResources(0, 1, nullSRV);
+
 	renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
 	renderDevice->GetDeviceContext()->OMSetDepthStencilState(NULL, 0);
 
