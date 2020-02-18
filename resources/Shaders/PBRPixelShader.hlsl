@@ -106,27 +106,24 @@ float4 PS(ps_Input pin) : SV_TARGET
 			discard;
 	}
 	float metalness = material.metallic;
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_METALLIC))
+	bool hasMetallic = HasTextureMap(material.textureBitField, TEX_SLOT_METALLIC);
+	if (hasMetallic)
 	{
 		metalness = TexMetallic.Sample(Sampler, pin.texCoord).x;
-		//if (metalness.w < 0.5f)
-		//	discard;
 	}
 	float roughness = material.roughness;
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_ROUGHNESS))
 	{
 		roughness = TexRoughness.Sample(Sampler, pin.texCoord).x;
-		//if (metalness.w < 0.5f)
-		//	discard;
 	}
-	else
+	else if (hasMetallic)
 	{
 		roughness = TexMetallic.Sample(Sampler, pin.texCoord).y;
 	}
 	// Outgoing light direction (vector from world-space fragment position to the "eye").
 	float3 Lo = normalize(eyePos - pin.posW);
 	
-	float3 N = normal;// normalize(pin.normalW);
+	float3 N = normal;
 	// Angle between surface normal and outgoing light direction.
 	float cosLo = max(0.0, dot(N, Lo));
 		
@@ -220,8 +217,6 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float3 ambient = float3(0.03, 0.03, 0.03) * albedo;
 
 	float3 color = ambient + directLighting;
-	color.rgb = color.rgb / (color.rgb + float3(1.0, 1.0, 1.0));
-	color = pow(color, float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
 	return float4(color, 1.0f);
 }
