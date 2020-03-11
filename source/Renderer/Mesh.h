@@ -45,7 +45,7 @@ namespace noctis::rdr
 		IndexBuffer<>&								GetIndexBuffer() noexcept { return m_indexBuffer; }
 
 		const std::string&							GetName() const noexcept { return m_name; }
-		std::shared_ptr<Material>				GetMaterial() noexcept { return MaterialPool::Instance().GetMaterial(m_materialName); }
+		std::shared_ptr<Material>					GetMaterial() noexcept { return MaterialPool::Instance().GetMaterial(m_materialName); }
 		void										SetMaterial(const std::string& name) { m_materialName = name; }
 
 	private:

@@ -30,7 +30,7 @@ public:
 		rotation.y = -asin(t._31 / scale.x);
 		rotation.z = atan2(t._21 / scale.x, t._11 / scale.x);
 	}
-	void Set(Transform& t)
+	void Set(const Transform& t)
 	{
 		position = t.position;
 		rotation = t.rotation;

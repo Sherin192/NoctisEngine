@@ -34,8 +34,10 @@ namespace rdr{
 		void								RenderImGuiFrame() override;
 #endif //NOCTIS_USE_IMGUI
 	private:
+		std::vector<std::shared_ptr<rdr::Model>> m_pModels;
+		std::vector <std::shared_ptr<rdr::NoctisLight>> m_pLights;
 		std::shared_ptr<rdr::Model>				m_pSkull;
-		std::unique_ptr<rdr::Model>				m_pCrate;
+		std::shared_ptr<rdr::Model>				m_pCrate;
 		std::shared_ptr<rdr::Model>				m_pSponza;
 		std::shared_ptr<rdr::Model>				m_pSpherePBR;
 		std::shared_ptr<rdr::Model>				m_pSpherePhong;

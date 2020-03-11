@@ -62,7 +62,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 		//mul(transpose(pin.TBN), normal) 
 		normal = normalize(mul(normal, pin.TBN).xyz);
 	}
-	else if (HasTextureMap(material.textureBitField, TEX_SLOT_HEIGHT))
+	if (HasTextureMap(material.textureBitField, TEX_SLOT_HEIGHT))
 	{
 		//This bump mapping implementation was taken from https://www.3dgep.com/forward-plus/
 		float height = TexNormal.Sample(Sampler, pin.texCoord).r * -2.0f;				//Multiplied by a scaling factor which for now is constant

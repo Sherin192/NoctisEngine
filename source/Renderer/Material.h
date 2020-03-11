@@ -13,15 +13,21 @@ namespace noctis::rdr
 class Material
 {
 public:
+	enum class MaterialType { Legacy, PBR };
 	Material() = default;
-	Material(const std::string& name) noexcept : m_name(name) {}
+	Material(const std::string& name, MaterialType type) noexcept : m_name(name), m_type(type) {}
 
 	virtual void Update(std::shared_ptr<RenderDevice> renderDevice) {}
 	virtual void Bind(std::shared_ptr<RenderDevice> renderDevice) {}
 	virtual void AddTexture(std::shared_ptr<Texture> texture) {}
-	const auto& GetName() { return m_name; }
+	std::shared_ptr<Texture> GetTexture(TextureUsage usage) { return m_textures[usage]; }
+	const auto& GetName() const noexcept { return m_name; }
+	const auto& GetType() const noexcept { return m_type; }
 	protected:
 	std::string						m_name;
+	MaterialType					m_type;
+	std::array<std::shared_ptr<Texture>, TextureUsage::COUNT> m_textures;
+
 };
 //====================================================================================
 
@@ -54,10 +60,10 @@ class PhongMaterial : public Material
 
 public:
 
-	PhongMaterial() : Material(kDefaultMaterial), m_material(defaultMaterial) {}
-	PhongMaterial(const std::string& name) : Material(name), m_material(defaultMaterial) {}
+	PhongMaterial() : Material(kDefaultMaterial, MaterialType::Legacy), m_material(defaultMaterial) {}
+	PhongMaterial(const std::string& name) : Material(name, MaterialType::Legacy), m_material(defaultMaterial) {}
 	PhongMaterial(std::shared_ptr<RenderDevice>& renderDevice,const  std::string& name, GPUMaterial& material) 
-		: Material(name), m_material(material)
+		: Material(name, MaterialType::Legacy), m_material(material)
 	{
 		m_cbuffer.Init(renderDevice, true, &m_material);
 	}
@@ -78,8 +84,6 @@ private:
 	
 	ConstantBuffer<GPUMaterial>	m_cbuffer;
 	GPUMaterial					m_material;
-	
-	std::array<std::shared_ptr<Texture>, TextureUsage::COUNT> m_textures;
 };
 //====================================================================================
 
@@ -88,7 +92,7 @@ private:
 
 
 //------------------------------------------------------------------------------------
-//		PBRMaterial: Base class for all materials
+//		PBRMaterial:
 //------------------------------------------------------------------------------------
 class PBRMaterial : public Material
 {
@@ -105,10 +109,10 @@ class PBRMaterial : public Material
 		int textureBitField;						// 4  bytes
 	};												// 32 bytes total
 public:
-	PBRMaterial() : Material(kDefaultPBRMaterial), m_material(defaultMaterial) {}
-	PBRMaterial(const std::string& name) : Material(name), m_material(defaultMaterial) {}
+	PBRMaterial() : Material(kDefaultPBRMaterial, MaterialType::PBR), m_material(defaultMaterial) {}
+	PBRMaterial(const std::string& name) : Material(name, MaterialType::PBR), m_material(defaultMaterial) {}
 	PBRMaterial(std::shared_ptr<RenderDevice>& renderDevice, const std::string& name, PBRMaterialData& material) 
-		: Material(name), m_material(material) 
+		: Material(name, MaterialType::PBR), m_material(material)
 	{ 
 		m_cbuffer.Init(renderDevice, true, &m_material); 
 	};
@@ -122,8 +126,6 @@ private:
 	void SetTextureBitField(int texture) noexcept { m_material.textureBitField |= 1 << texture;; }
 	ConstantBuffer<PBRMaterialData>	m_cbuffer;
 	PBRMaterialData					m_material;
-
-	std::array<std::shared_ptr<Texture>, TextureUsage::COUNT> m_textures;
 };
 //====================================================================================
 
@@ -175,5 +177,35 @@ private:
 	std::shared_ptr<RenderDevice> m_pRenderDevice;
 };
 //====================================================================================
+
+
+
+
+
+constexpr const char* TextureUsageToString(Material::MaterialType type, TextureUsage usage)
+{
+	auto legacy = type == Material::MaterialType::Legacy;
+
+	switch (usage)
+	{
+	case DIFFUSE:
+		return legacy ? "Diffuse" : "Albedo";
+	case SPECULAR:
+		return legacy ? "Specular" : "Metallic";
+	case NORMAL:
+		return "Normal Map";
+	case HEIGHT:
+		return legacy ? "Height Map" : "Roughness";
+	case OPACITY:
+		return "Opacity";
+	case EMISSIVE:
+		return "Emissive";
+	case AMBIENT_OCCLUSION:
+		return "Ambient Occlusion";
+	default:
+		return "";
+	}
+}
+
 }	//noctis::rdr
 #endif //_MATERIAL_H
