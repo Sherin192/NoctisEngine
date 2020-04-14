@@ -376,12 +376,13 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::pa
 
 	if (!AssetManager::Instance().ContainsTexture(filePath.string()))
 	{
+		//Using STBI_rgb_alpha means forcing 4 components for the texture.
 		data = stbi_load(filePath.string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
 		if (!data)
 		{
 			Log(LogLevel::Error, "Failed to load a texture at : " + filePath.string());
 		}
-		return AssetManager::Instance().AddTexture(std::make_shared<rdr::Texture>(m_pRenderDevice, data, filePath.string(), width, height, 4, type));
+		return AssetManager::Instance().AddTexture(std::make_shared<rdr::Texture>(m_pRenderDevice, data, filePath.string(), width, height, 4, type, type == rdr::TextureUsage::DIFFUSE ? rdr::Format::kRGBA8UN_SRGB : rdr::Format::kRGBA8UN));
 	}
 	else
 	{

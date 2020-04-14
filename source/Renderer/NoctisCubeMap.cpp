@@ -8,7 +8,7 @@
 namespace noctis::rdr
 {
 CubeMap::CubeMap(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::array<std::string, 6>& paths, unsigned int width, unsigned int height, unsigned int nrChannels)
-	: m_filePaths(paths), m_width(width), m_height(height), m_nrChannels(nrChannels), Base(renderDevice, data, width, height, nrChannels, TextureUsage::CUBE_MAP) 
+	: m_filePaths(paths), m_width(width), m_height(height), m_nrChannels(nrChannels), Base(renderDevice, data, width, height, nrChannels, TextureUsage::CUBE_MAP, kRGBA8UN_SRGB /* so gamma correction works fine.*/)
 {
 	Init(renderDevice);
 }

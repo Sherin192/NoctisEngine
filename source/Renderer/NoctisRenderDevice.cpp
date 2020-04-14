@@ -1,6 +1,6 @@
 #include "NoctisRenderDevice.h"
 #include "NoctisSampler.h"
-
+#include "NoctisTexture.h"
 namespace noctis::rdr
 {
 
@@ -41,5 +41,11 @@ namespace noctis::rdr
 		Base::SetSampler(slot, num, sampler);
 	}
 
+
+
+	void RenderDevice::SetRenderTarget(Texture* rtv /* = nullptr*/)
+	{
+		Base::SetRenderTarget(static_cast<Texture::Base*>(rtv));
+	}
 }
 

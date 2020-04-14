@@ -55,6 +55,8 @@ static auto NoctisToDx11Topology(noctis::rdr::Topology topology)
 
 namespace noctis::rdr
 {
+	class Dx11Texture;
+
 	class Dx11RenderDevice
 	{
 	protected:
@@ -66,10 +68,12 @@ namespace noctis::rdr
 		auto GetDevice() const { return m_pDevice.Get(); }
 		auto GetDeviceContext() const { return m_pImmediateContext.Get(); }
 		auto GetSwapChain()	const { return m_pSwapChain.Get(); }
+		auto GetWindowWidthHeight() const { return std::make_pair(m_windowWidth, m_windowHeight); }
 
 		void Present();
 
 		void SetRasterizerState(RasterizerType);
+
 
 		void SetPrimitiveTopology(Topology);
 
@@ -79,9 +83,13 @@ namespace noctis::rdr
 
 
 		void CreateRasterizationState();
+		void ResetRenderTarget();
 
-	protected:
 		void ClearRenderTarget();
+	protected:
+		// TODO:: this should take the number of RTs and allow to set that many, also it will be nice to remove the naked pointer. 
+		void SetRenderTarget(Dx11Texture* rtv = nullptr);
+		
 
 		void ClearDepthStencil(uint8_t targets, float depthColor, float stencilColor);
 	private:
@@ -101,6 +109,7 @@ namespace noctis::rdr
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>				m_pBackBuffer;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>		m_pRTView;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>		m_pBackBufferRTView;
 
 #if _DEBUG
 		Microsoft::WRL::ComPtr<ID3D11Debug>					m_pDebugDevice;

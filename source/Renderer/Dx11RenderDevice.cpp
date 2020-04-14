@@ -1,4 +1,5 @@
 #include "Dx11RenderDevice.h"
+#include "Dx11Texture.h"
 
 namespace noctis::rdr
 {
@@ -96,6 +97,8 @@ namespace noctis::rdr
 		using Microsoft::WRL::ComPtr;
 		UINT createDeviceFlags = 0;
 		m_windowHandle = hwnd;
+		m_windowWidth = width;
+		m_windowHeight = height;
 #ifdef _DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -169,7 +172,8 @@ namespace noctis::rdr
 		//CREATE RENDER TARGET VIEW
 		m_pSwapChain->GetBuffer(NULL, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_pBackBufferTex.GetAddressOf()));
 
-		m_pDevice->CreateRenderTargetView(m_pBackBufferTex.Get(), nullptr, &m_pRTView);
+		m_pDevice->CreateRenderTargetView(m_pBackBufferTex.Get(), nullptr, &m_pBackBufferRTView);
+		m_pRTView = m_pBackBufferRTView;
 
 		//DEPTH/STENCIL BUFFER INITIALIZATION
 		auto [dsDesc, dsbDesc, dsvDesc] = InitDepthStencilDescs(width, height);		//Fills all the _DESC structs for the depth stencil initialization.
@@ -185,7 +189,7 @@ namespace noctis::rdr
 		assert(m_pDepthStencilBuffer.Get() != nullptr);
 		assert(m_pDepthStencilView.Get() != nullptr);
 		//BIND RENDER TARGET VIEW 
-		m_pImmediateContext->OMSetRenderTargets(1, m_pRTView.GetAddressOf(), m_pDepthStencilView.Get());
+		m_pImmediateContext->OMSetRenderTargets(1, m_pBackBufferRTView.GetAddressOf(), m_pDepthStencilView.Get());
 
 		//VIEWPORT INITIALIZATION
 		D3D11_VIEWPORT viewPort;
@@ -227,6 +231,21 @@ namespace noctis::rdr
 
 		HR(m_pDevice->CreateRasterizerState(&rasterizerDesc, &m_rasterizerStates[RasterizerType::WIREFRAME_CULL_NONE]));
 
+	}
+
+
+
+
+	void Dx11RenderDevice::SetRenderTarget(Dx11Texture* rtv)
+	{
+		if (rtv)
+			m_pRTView = rtv->GetRTV();
+		else m_pRTView = m_pBackBufferRTView;
+		m_pImmediateContext->OMSetRenderTargets(1, rtv? m_pRTView.GetAddressOf() : m_pBackBufferRTView.GetAddressOf(), m_pDepthStencilView.Get());
+	}
+	void Dx11RenderDevice::ResetRenderTarget()
+	{
+		m_pImmediateContext->OMSetRenderTargets(1, m_pBackBufferRTView.GetAddressOf(), m_pDepthStencilView.Get());
 	}
 
 } //noctis::rdr

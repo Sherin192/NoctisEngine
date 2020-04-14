@@ -6,9 +6,9 @@
 
 namespace noctis::rdr
 {
-//------------------------------------------------------------------------------------
-//		Dx11Texture: Dx11 base class for textures.
-//------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------
+	//		Dx11Texture: Dx11 base class for textures.
+	//------------------------------------------------------------------------------------
 	class Dx11Texture
 	{
 	protected:
@@ -17,19 +17,20 @@ namespace noctis::rdr
 	public:
 		Dx11Texture() = default;
 
-		Dx11Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type = TextureUsage::UNSPECIFIED);
-		
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		GetSRV()	 const	noexcept;
-		
+		Dx11Texture(std::shared_ptr<RenderDevice>& renderDevice, void* data, unsigned int width, unsigned int height, unsigned int nrChannels, TextureUsage type, Format format = Format::kRGBA8UN);
+
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		GetSRV()	const noexcept;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>			GetRTV()	const noexcept;
+
 		std::shared_ptr<Sampler>& GetSampler();
 
 	private:
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>			m_pTextureRTV;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		m_pTextureSRV;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>					m_pTexture;
 		//TODO: Make a cache of common samplers which will be bound to the pipeline at each draw
 		std::shared_ptr<Sampler>								m_pSampler;
 	};
-
 //====================================================================================
 }
 #endif //_DX11_TEXTURE_H

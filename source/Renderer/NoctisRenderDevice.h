@@ -32,7 +32,7 @@ namespace noctis::rdr
 			void SetPrimitiveTopology(Topology topology);
 
 			void SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler);
-
+			void SetRenderTarget(Texture* rtv = nullptr);
 			template <template<typename> typename BufferType, typename DataType, typename... Args>
 			auto CreateBuffer(Args... args);
 	};
