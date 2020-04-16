@@ -57,6 +57,17 @@ namespace noctis::rdr
 			hResult = renderDevice->GetDevice()->CreateRenderTargetView(m_pTexture.Get(), &RTViewDesc, m_pTextureRTV.GetAddressOf());
 
 			hResult = renderDevice->GetDevice()->CreateShaderResourceView(m_pTexture.Get(), &desc, m_pTextureSRV.GetAddressOf());
+			
+			D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+			uavDesc.Format = texDesc.Format;
+			if (texDesc.ArraySize == 1)
+			{
+				uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+				uavDesc.Texture2D.MipSlice = 0;
+			}
+
+			hResult = renderDevice->GetDevice()->CreateUnorderedAccessView(m_pTexture.Get(), &uavDesc, m_pTextureUAV.GetAddressOf());
+
 			renderDevice->GetDeviceContext()->GenerateMips(m_pTextureSRV.Get());
 			if (FAILED(hResult))
 			{
@@ -111,17 +122,12 @@ namespace noctis::rdr
 			{
 				D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 				uavDesc.Format = texDesc.Format;
-				if (texDesc.ArraySize == 1) 
-				{
-					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
-					uavDesc.Texture2D.MipSlice = 0;
-				}
-				else {
-					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
-					uavDesc.Texture2DArray.MipSlice = 0;
-					uavDesc.Texture2DArray.FirstArraySlice = 0;
-					uavDesc.Texture2DArray.ArraySize = texDesc.ArraySize;
-				}
+
+				uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+				uavDesc.Texture2DArray.MipSlice = 0;
+				uavDesc.Texture2DArray.FirstArraySlice = 0;
+				uavDesc.Texture2DArray.ArraySize = texDesc.ArraySize;
+			
 
 				hr = renderDevice->GetDevice()->CreateUnorderedAccessView(m_pTexture.Get(), &uavDesc, m_pTextureUAV.GetAddressOf());
 			}
