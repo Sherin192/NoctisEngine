@@ -21,12 +21,14 @@ namespace noctis::rdr
 
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		GetSRV()	const noexcept;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>			GetRTV()	const noexcept;
+		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>		GetUAV()	const noexcept;
 
 		std::shared_ptr<Sampler>& GetSampler();
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>			m_pTextureRTV;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		m_pTextureSRV;
+		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>		m_pTextureUAV;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>					m_pTexture;
 		//TODO: Make a cache of common samplers which will be bound to the pipeline at each draw
 		std::shared_ptr<Sampler>								m_pSampler;

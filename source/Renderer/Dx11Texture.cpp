@@ -41,7 +41,7 @@ namespace noctis::rdr
 				Log(LogLevel::Warning, "Failed to create a 2D texture.");
 			}
 			if (data)
-				renderDevice->GetDeviceContext()->UpdateSubresource(m_pTexture.Get(), 0, NULL, data, width * nrChannels, 0);
+				renderDevice->GetDeviceContext()->UpdateSubresource(m_pTexture.Get(), 0, NULL, data, width * nrChannels * (type == HDR? sizeof(float) : sizeof(unsigned char)), 0);
 
 			D3D11_SHADER_RESOURCE_VIEW_DESC desc;
 			desc.Format = texDesc.Format;
@@ -76,7 +76,7 @@ namespace noctis::rdr
 			texDesc.SampleDesc.Count = 1;
 			texDesc.SampleDesc.Quality = 0;
 			texDesc.Usage = D3D11_USAGE_DEFAULT;
-			texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | (data ? 0 : D3D11_BIND_UNORDERED_ACCESS); // if there was no data passes this means the cubemap needs to be filled.
 			texDesc.CPUAccessFlags = 0;
 			texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
@@ -85,22 +85,46 @@ namespace noctis::rdr
 			SMViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 			SMViewDesc.TextureCube.MipLevels = texDesc.MipLevels;
 			SMViewDesc.TextureCube.MostDetailedMip = 0;
-
-			D3D11_SUBRESOURCE_DATA pData[6];
-			auto d = reinterpret_cast<unsigned char**>(data);
-			for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < 6; cubeMapFaceIndex++)
+			if (data)
 			{
-				pData[cubeMapFaceIndex].pSysMem = d[cubeMapFaceIndex];
-				pData[cubeMapFaceIndex].SysMemPitch = width * 4;
-				pData[cubeMapFaceIndex].SysMemSlicePitch = 0;
+				D3D11_SUBRESOURCE_DATA pData[6];
+				auto d = reinterpret_cast<unsigned char**>(data);
+				for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < 6; cubeMapFaceIndex++)
+				{
+					pData[cubeMapFaceIndex].pSysMem = d[cubeMapFaceIndex];
+					pData[cubeMapFaceIndex].SysMemPitch = width * 4;
+					pData[cubeMapFaceIndex].SysMemSlicePitch = 0;
+				}
+
+				HRESULT hr = renderDevice->GetDevice()->CreateTexture2D(&texDesc, &pData[0], m_pTexture.GetAddressOf());
+				assert(hr == S_OK);
 			}
-
-			HRESULT hr = renderDevice->GetDevice()->CreateTexture2D(&texDesc, &pData[0], m_pTexture.GetAddressOf());
-			assert(hr == S_OK);
-
-			hr = renderDevice->GetDevice()->CreateShaderResourceView(m_pTexture.Get(), &SMViewDesc, m_pTextureSRV.GetAddressOf());
+			else
+			{
+				HRESULT hr = renderDevice->GetDevice()->CreateTexture2D(&texDesc, NULL, m_pTexture.GetAddressOf());
+				assert(hr == S_OK);
+			}
+			HRESULT hr = renderDevice->GetDevice()->CreateShaderResourceView(m_pTexture.Get(), &SMViewDesc, m_pTextureSRV.GetAddressOf());
 			assert(hr == S_OK);
 			
+			if (!data)
+			{
+				D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+				uavDesc.Format = texDesc.Format;
+				if (texDesc.ArraySize == 1) 
+				{
+					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+					uavDesc.Texture2D.MipSlice = 0;
+				}
+				else {
+					uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+					uavDesc.Texture2DArray.MipSlice = 0;
+					uavDesc.Texture2DArray.FirstArraySlice = 0;
+					uavDesc.Texture2DArray.ArraySize = texDesc.ArraySize;
+				}
+
+				hr = renderDevice->GetDevice()->CreateUnorderedAccessView(m_pTexture.Get(), &uavDesc, m_pTextureUAV.GetAddressOf());
+			}
 			m_pSampler = std::make_unique<Sampler>(renderDevice, SamplerType<FilterLinear, AddressUWrap, AddressVWrap, AddressWClamp, CompareNever>{});
 		}
 
@@ -128,11 +152,25 @@ namespace noctis::rdr
 
 
 //------------------------------------------------------------------------------------
-//		GetSRV: Returns shader resource view.
+//		GetSRV: Returns render target view.
 //------------------------------------------------------------------------------------
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Dx11Texture::GetRTV()	 const	noexcept
 	{
 		return m_pTextureRTV;
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		GetUAV: Returns unordered access view.
+//------------------------------------------------------------------------------------
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> Dx11Texture::GetUAV()	 const	noexcept
+	{
+		return m_pTextureUAV;
 	}
 
 //====================================================================================
