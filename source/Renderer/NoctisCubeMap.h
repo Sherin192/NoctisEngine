@@ -15,9 +15,11 @@ namespace noctis::rdr
 	{
 		using Base = Dx11Texture;
 	public:
-		CubeMap(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::array<std::string, 6>& paths, unsigned int width, unsigned int height, unsigned int nrChannels);
+		CubeMap(std::shared_ptr<RenderDevice>& renderDevice, void* data, std::array<std::string, 6>& paths, unsigned int width, unsigned int height, unsigned int nrChannels, rdr::Format format = kRGBA8UN_SRGB);
 
 		void Render(std::shared_ptr<RenderDevice>&, Camera&);
+
+		const auto GetSize() const noexcept { return std::make_pair( m_width, m_height ); }
 	private:
 		void Init(std::shared_ptr<RenderDevice>& renderDevice);
 		std::array<std::string, 6>								m_filePaths;
