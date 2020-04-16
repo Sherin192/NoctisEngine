@@ -43,30 +43,24 @@ struct PBRMaterialData
 
 struct DirectionalLight
 {
-	float4 diffuse;								// 16 bytes
-	//-----------------------------------
-	float4 specular;							// 16 bytes
-	//-----------------------------------
-    float4 ambient;								// 16 bytes
+	float4 color;								// 16 bytes
 	//-----------------------------------
     float3 direction;							// 12 bytes
 	float pad;									// 4  bytes
 	//----------------------------------
-};												//64 bytes total
+};												//32 bytes total
 
 struct PointLight
 {
-	float4 diffuse;								// 16 bytes
-	//----------------------------------
-	float4 specular;							// 16 bytes
+	float4 color;								// 16 bytes
 	//----------------------------------
 	float3 position;							// 12 bytes
-	float range;								// 4  bytes
+	float pad;								// 4  bytes
 	//----------------------------------
 	float3 attenuation;							// 12 bytes
 	bool enabled;								// 4  bytes
 	//----------------------------------
-};												//80 bytes total
+};												//48 bytes total
 
 struct SpotLight
 {
@@ -111,16 +105,16 @@ float BlinnPhong(float3 light, float3 view, float3 normal)
 
 void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 normal, float3 eye, out float4 diffuse, out float4 specular)
 {
-    float diffuseFactor = max(0.0f, dot(-light.direction, normal));
+	float3 L = normalize(-light.direction);
+	float NdL = max(0.0f, dot(L, normal));
+	diffuse = NdL * light.color;
 
-    float specFactor = pow(BlinnPhong(-light.direction, eye, normal), mat.specular.w);
-
-	diffuse = diffuseFactor * light.diffuse;
-	specular = specFactor * light.specular;
+	specular = light.color * pow(BlinnPhong(L, eye, normal), mat.specular.w);
 }
 
 
-void CalculatePointLight(GPUMaterial mat, PointLight L, float3 pos, float3 normal, float3 toEye,
+
+void CalculatePointLight(GPUMaterial mat, PointLight light, float3 pos, float3 normal, float3 toEye,
 	out float4 diffuse, out float4 spec)
 {
 	// Initialize outputs.
@@ -128,11 +122,11 @@ void CalculatePointLight(GPUMaterial mat, PointLight L, float3 pos, float3 norma
 	spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	// The vector from the surface to the light.
-	float3 lightVec = L.position - pos;
+	float3 lightVec = light.position - pos;
 
 	// The distance from surface to light.
 	float d = length(lightVec);
-
+	
 	// Normalize the light vector.
 	lightVec /= d;
  
@@ -143,10 +137,10 @@ void CalculatePointLight(GPUMaterial mat, PointLight L, float3 pos, float3 norma
 
     float specFactor = pow(BlinnPhong(lightVec, toEye, normal), mat.specular.w);
 		
-	diffuse = diffuseFactor *L.diffuse;
-	spec = specFactor * L.specular;
+	diffuse = diffuseFactor * light.color;
+	spec = specFactor * light.color;
 
-	float att = 1.0f / dot(L.attenuation, float3(1.0f, d, d*d));
+	float att = 1.0f / dot(light.attenuation, float3(1.0f, d, d*d));
 
 	diffuse *= att;
 	spec.xyz *= att;

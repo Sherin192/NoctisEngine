@@ -30,7 +30,6 @@ namespace noctis::rdr
 struct Light
 {
 	math::Nvec4 diffuse;
-	math::Nvec4 specular;
 };
 
 //====================================================================================
@@ -44,7 +43,6 @@ struct Light
 //------------------------------------------------------------------------------------
 struct DirectionalLight : public Light
 {
-	math::Nvec4	ambient;
 	math::Nvec3 direction;
 	float pad;
 };

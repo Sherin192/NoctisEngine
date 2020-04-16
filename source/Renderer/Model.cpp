@@ -59,6 +59,7 @@ void Model::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 
 void Model::RenderNode(std::shared_ptr<RenderDevice>& renderDevice, Node* node, Camera& cam, Transform& accumulatedTransform)
 {
+	renderDevice->SetRasterizerState(RasterizerType::SOLID_CULL_BACK);
 	auto NodeTransform = Transform(accumulatedTransform.AsMatrix() * node->m_transform.AsMatrix());
 	math::Nmat4 WVP = cam.GetProj() * cam.GetView() * NodeTransform.AsMatrix();
 	CBModelData cbData(NodeTransform.AsMatrix(), WVP);

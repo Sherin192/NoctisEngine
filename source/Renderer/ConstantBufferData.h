@@ -47,7 +47,7 @@ namespace noctis::rdr
 		DirectionalLight dirLight;
 		PointLight pointLights[8];
 		math::Nvec3 eyePos;
-		float pad;
+		float ambient;
 	};
 
 //====================================================================================

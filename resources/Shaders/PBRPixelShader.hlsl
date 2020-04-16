@@ -1,19 +1,26 @@
 #include "LightHelpers.hlsl"
 
+
+// References upon which this is based:
+// - Unreal Engine 4 PBR notes (https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
+// - Frostbite's SIGGRAPH 2014 paper (https://seblagarde.wordpress.com/2015/07/14/siggraph-2014-moving-frostbite-to-physically-based-rendering/)
+// - Michal Siejak's PBR project (https://github.com/Nadrin)
+// - Physically Based Rendering in Filament (https://google.github.io/filament/Filament.md.html#listing_glslbrdf)
+
 #define MAX_POINT_LIGHTS 8
 
 cbuffer ConstantBufferPerFrame : register(b1)
 {
-    DirectionalLight dirLight; // 64 bytes
+    DirectionalLight dirLight; // 32 bytes
 	//----------------------------------
-    PointLight pointLights[MAX_POINT_LIGHTS]; // 512 bytes
+	PointLight pointLights[MAX_POINT_LIGHTS]; // 48 * 8 = 384 bytes
 	//----------------------------------
 //	SpotLight spotLight;
 	//----------------------------------
     float3 eyePos; // 12 bytes
-    float pad; // 4  bytes
+    float ambient; // 4  bytes
 	//----------------------------------
-};												//720 bytes total
+};												//432 bytes total
 
 cbuffer ConstantBufferPerObject : register(b0)
 {
@@ -51,8 +58,7 @@ struct ps_Input
 static const float Epsilon = 0.00001;
 
 // GGX/Towbridge-Reitz normal distribution function.
-// Uses Disney's reparametrization of alpha = roughness^2.
-float ndfGGX(float cosLh, float roughness)
+float D_GGX(float cosLh, float roughness)
 {
 	float alpha = roughness * roughness;
 	float alphaSq = alpha * alpha;
@@ -120,54 +126,50 @@ float4 PS(ps_Input pin) : SV_TARGET
 	{
 		roughness = TexMetallic.Sample(Sampler, pin.texCoord).y;
 	}
-	// Outgoing light direction (vector from world-space fragment position to the "eye").
-	float3 Lo = normalize(eyePos - pin.posW);
 	
 	float3 N = normal;
-	// Angle between surface normal and outgoing light direction.
-	float cosLo = max(0.0, dot(N, Lo));
-		
-	// Specular reflection vector.
-	float3 Lr = 2.0 * cosLo * N - Lo;
+	float3 L = -normalize(dirLight.direction);
+	float3 V = normalize(eyePos - pin.posW);
+	float3 H = normalize(L + V);
+	
+	float NdV = max(0.0f, dot(N, V));
+	float NdL = max(0.0f, dot(N, L));
+	float NdH = max(0.0f, dot(N, H));
+	float LdH = max(0.0f, dot(L, H));
+	
 	
 	float3 F0 = { 0.04f, 0.04f, 0.04f };
-	F0 = lerp(F0, albedo, metalness);
+	F0 = lerp(F0, albedo.rgb, metalness);
+	
+	float D = D_GGX(NdH, roughness);
+	float G = gaSchlickGGX(NdL, NdV, roughness);
+	float3 F = fresnelSchlick(F0, LdH);
+	
+	// Specular reflection vector.
+	float3 Lr = 2.0 * NdV * N - V;
+	float3 Lr1 = reflect(V, N);
+	
 	
 	// Direct lighting calculation for analytical lights.
-	float3 directLighting = 0.0;
+	float3 directLighting = 0.0f;
 
-		float3 Li = -normalize(dirLight.direction);
-
-	// Half-vector between Li and Lo.
-		float3 Lh = normalize(Li + Lo);
-
-	// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(N, Li));
-		float cosLh = max(0.0, dot(N, Lh));
+	float3 Lradiance = dirLight.color;
 	
-		float3 Lradiance = dirLight.diffuse;
-	
-		float3 F = fresnelSchlick(F0, max(0.0, dot(Lh, Lo)));
-		// Calculate normal distribution for specular BRDF.
-		float D = ndfGGX(cosLh, roughness);
-		// Calculate geometric attenuation for specular BRDF.
-		float G = gaSchlickGGX(cosLi, cosLo, roughness);
+	// Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
+	// Metals on the other hand either reflect or absorb energy, so diffuse contribution is always zero.
+	// To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
+	float3 kd = lerp(float3(1.0f, 1.0f, 1.0f) - F, float3(0.0f, 0.0f, 0.0f), metalness);
 
-		// Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
-		// Metals on the other hand either reflect or absorb energy, so diffuse contribution is always zero.
-		// To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
-		float3 kd = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metalness);
+	// Lambert diffuse BRDF.
+	// We don't scale by 1/PI for lighting & material units to be more convenient.
+	// See: https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
+	float3 diffuseBRDF = kd * albedo.rgb;
 
-		// Lambert diffuse BRDF.
-		// We don't scale by 1/PI for lighting & material units to be more convenient.
-		// See: https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-		float3 diffuseBRDF = kd * albedo;
+	// Cook-Torrance specular microfacet BRDF.
+	float3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdL * NdV);
 
-		// Cook-Torrance specular microfacet BRDF.
-		float3 specularBRDF = (F* D * G) / max(Epsilon, 4.0 * cosLi * cosLo);
-
-		// Total contribution for this light.
-		directLighting += (diffuseBRDF + specularBRDF)* Lradiance* cosLi;
+	// Total contribution for this light.
+	directLighting += (diffuseBRDF + specularBRDF)* Lradiance* NdL;
 
 
 	[unroll]
@@ -176,47 +178,47 @@ float4 PS(ps_Input pin) : SV_TARGET
 		if (!pointLights[i].enabled)
 			continue;
 
-		float3 lightVec = pointLights[i].position - pin.posW;
-		float d = length(lightVec);
-		float3 Li = normalize(lightVec);
-
-		// Half-vector between Li and Lo.
-		float3 Lh = normalize(Li + Lo);
-
-		// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(N, Li));
-		float cosLh = max(0.0, dot(N, Lh));
-
-		float3 Lradiance = pointLights[i].specular;
+		float3 L = pointLights[i].position - pin.posW;
+		float d = length(L);
+		L = normalize(L);
+		H = normalize(L + V);
+	
+		NdL = max(0.0f, dot(N, L));
+		NdH = max(0.0f, dot(N, H));
+		LdH = max(0.0f, dot(L, H));
+	
+		float3 Lradiance = pointLights[i].color;
 		float att = 1.0f / dot(pointLights[i].attenuation, float3(1.0f, d, d * d));
 		Lradiance *= att;
 
-		float3 F = fresnelSchlick(F0, max(0.0, dot(Lh, Lo)));
-		// Calculate normal distribution for specular BRDF.
-		float D = ndfGGX(cosLh, roughness);
-		// Calculate geometric attenuation for specular BRDF.
-		float G = gaSchlickGGX(cosLi, cosLo, roughness);
-
+	
+		float3 F0 = { 0.04f, 0.04f, 0.04f };
+		F0 = lerp(F0, albedo.rgb, metalness);
+	
+		float D = D_GGX(NdH, roughness);
+		float G = gaSchlickGGX(NdL, NdV, roughness);
+		float3 F = fresnelSchlick(F0, LdH);
+		
 		// Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
 		// Metals on the other hand either reflect or absorb energy, so diffuse contribution is always zero.
 		// To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
-		float3 kd = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metalness);
+		float3 kd = lerp(float3(1.0f, 1.0f, 1.0f) - F, float3(0.0f, 0.0f, 0.0f), metalness);
 
 		// Lambert diffuse BRDF.
 		// We don't scale by 1/PI for lighting & material units to be more convenient.
 		// See: https://seblagarde.wordpress.com/2012/01/08/pi-or-not-to-pi-in-game-lighting-equation/
-		float3 diffuseBRDF = kd * albedo;
+		float3 diffuseBRDF = kd * albedo.rgb;
 
 		// Cook-Torrance specular microfacet BRDF.
-		float3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * cosLo);
+		float3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdL * NdV);
 
 		// Total contribution for this light.
-		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * NdL;
 	}
 
-	float3 ambient = float3(0.03, 0.03, 0.03) * albedo;
+	float3 globalAmbient = pow(ambient, 2.2f) * albedo;
 
-	float3 color = ambient + directLighting;
+	float3 color = globalAmbient + directLighting;
 
 	return float4(color, 1.0f);
 }

@@ -11,7 +11,7 @@ cbuffer ConstantBufferPerFrame : register(b1)
 //	SpotLight spotLight;
 	//----------------------------------
 	float3 eyePos;								// 12 bytes
-	float pad;									// 4  bytes
+	float ambient;								// 4  bytes
 	//----------------------------------
 };												//720 bytes total
 
@@ -62,6 +62,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 		//mul(transpose(pin.TBN), normal) 
 		normal = normalize(mul(normal, pin.TBN).xyz);
 	}
+	
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_HEIGHT))
 	{
 		//This bump mapping implementation was taken from https://www.3dgep.com/forward-plus/
@@ -77,10 +78,12 @@ float4 PS(ps_Input pin) : SV_TARGET
 		normal = cross(normalize(pU - p), normalize(pV - p));
 		normal = normalize(mul(normal, pin.TBN).xyz);
 	}
+	
 	float3 toEye = normalize(eyePos - pin.posW);
 	
 	//One globac ambient light
-	float4 ambient = dirLight.ambient;
+	GPUMaterial mat = material;
+
 	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 emissive = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -90,15 +93,15 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float4 texDiffuse = {0.0f, 0.0f, 0.0f, 0.0f};
 	float4 texSpecular = {0.0f, 0.0f, 0.0f, 0.0f};
 
-	GPUMaterial mat = material;
-
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_DIFFUSE))
 	{
 		texDiffuse = TexDiffuse.Sample(Sampler, pin.texCoord);
 		if (texDiffuse.w < 0.5f)
 			discard;
-	 	mat.diffuse = texDiffuse;
+		mat.diffuse = texDiffuse;
 	}
+	float4 globalAmbient = pow(ambient, 2.2f) * mat.diffuse;
+	
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_SPECULAR))
 	{
 		texSpecular = TexSpecular.Sample(Sampler, pin.texCoord);
@@ -122,12 +125,13 @@ float4 PS(ps_Input pin) : SV_TARGET
 		diffuse += Dp;
 		spec += Sp;
 	}
-
-	float4 litColor = emissive+ ambient + diffuse * mat.diffuse + spec * mat.specular;
+	float4 litColor = emissive + globalAmbient + diffuse * mat.diffuse + spec * mat.specular;
 	
 	//Common to take alpha from diffuse materail.
 	litColor.a = mat.diffuse.w;
-	litColor.rgb = litColor.rgb / (litColor.rgb + float3(1.0, 1.0, 1.0));
-	pow(litColor.rgb, float3(1.0f / 2.2f, 1.0f / 2.2f, 1.0f / 2.2f));
-  return litColor;
+	
+	if (!HasTextureMap(material.textureBitField, TEX_SLOT_DIFFUSE))
+		return pow(litColor, 2.2f); 
+	else 
+		return litColor;
 }
