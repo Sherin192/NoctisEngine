@@ -51,5 +51,14 @@ namespace noctis::rdr
 
 		PixelShader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source) : Base(renderDevice, std::forward<std::wstring&&>(source)) {}
 	};
+
+	class ComputeShader : public Dx11Shader<ComputeShader>
+	{
+	public:
+		using Base = Dx11Shader<ComputeShader>;
+		using type = ComputeShader;
+
+		ComputeShader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source) : Base(renderDevice, std::forward<std::wstring&&>(source)) {}
+	};
 }
 #endif //NOCTIS_SHADER_H

@@ -7,7 +7,7 @@ namespace noctis::rdr
 //------------------------------------------------------------------------------------
 	class VertexShader;
 	class PixelShader;
-
+	class ComputeShader;
 //====================================================================================
 
 
@@ -24,6 +24,8 @@ namespace noctis::rdr
 		template <>	struct Dx11ShaderObject<VertexShader> { using type = ID3D11VertexShader; };
 
 		template <> struct Dx11ShaderObject<PixelShader> { using type = ID3D11PixelShader; };
+
+		template <> struct Dx11ShaderObject<ComputeShader> { using type = ID3D11ComputeShader; };
 
 		template <typename ShaderType>
 		using Dx11ShaderObject_t = typename Dx11ShaderObject<ShaderType>::type;
@@ -118,6 +120,10 @@ namespace noctis::rdr
 		{
 			renderDevice->GetDeviceContext()->PSSetShader(m_pShaderObject.Get(), 0, 0);
 		}
+		else if constexpr (std::is_same_v<ComputeShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->CSSetShader(m_pShaderObject.Get(), 0, 0);
+		}
 	}
 
 //====================================================================================
@@ -165,7 +171,6 @@ namespace noctis::rdr
 				Log(LogLevel::Error, "Failed to compile Vertex Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
 
 			hResult = renderDevice->GetDevice()->CreateVertexShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
-
 		}
 		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
 		{
@@ -174,18 +179,15 @@ namespace noctis::rdr
 			if (FAILED(hResult))
 				Log(LogLevel::Error, "Failed to compile Pixel Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
 			hResult = renderDevice->GetDevice()->CreatePixelShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
-
 		}
-
-		if (FAILED(hResult))
+		else if constexpr (std::is_same_v<ComputeShader, std::decay_t<decltype(*shaderType)>>)
 		{
-			//TODO: LOG fix when proper logging is implemented.
-			std::cerr << "Failed to compile Vertex Shader" << std::endl;
-			char* errorMsg = (char*)errorMessages->GetBufferPointer();
-			std::cerr << errorMsg;
+			hResult = D3DCompileFromFile(static_cast<LPCWSTR>(m_file.c_str()), NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", flags, 0, &m_pByteCode, &errorMessages);
+
+			if (FAILED(hResult))
+				Log(LogLevel::Error, "Failed to compile Compute Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
+			hResult = renderDevice->GetDevice()->CreateComputeShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 		}
-
-
 	};
 
 //====================================================================================
