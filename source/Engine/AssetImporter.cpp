@@ -27,7 +27,7 @@ public:
 	void									ProcessNode(const aiScene*, aiNode*, std::shared_ptr<rdr::Model>&, rdr::Node*);
 	std::shared_ptr<rdr::Mesh>				ProcessMesh(const aiScene*, aiMesh*);
 	std::shared_ptr<rdr::Texture>			LoadMaterial(aiMaterial *, aiTextureType);
-	std::shared_ptr<rdr::Texture>			LoadTexture(std::filesystem::path, rdr::TextureUsage);
+	std::shared_ptr<rdr::Texture>			LoadTexture(std::filesystem::path, rdr::TextureUsage, uint8_t channels = 4);
 	std::shared_ptr<rdr::CubeMap>			LoadCubeMap(std::array<std::string, 6>& paths);
 
 	std::shared_ptr<rdr::Material>			FillMaterial(const aiMaterial* mat);
@@ -60,9 +60,9 @@ std::shared_ptr<rdr::Model> AssetImporter::LoadModel(std::filesystem::path fileP
 
 
 
-std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type)
+std::shared_ptr<rdr::Texture> AssetImporter::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type, uint8_t channels)
 {
-	return m_pImpl->LoadTexture(filePath, type);
+	return m_pImpl->LoadTexture(filePath, type, channels);
 }
 
 
@@ -72,7 +72,6 @@ std::shared_ptr<rdr::CubeMap> AssetImporter::LoadCubeMap(std::array<std::string,
 {
 	return m_pImpl->LoadCubeMap(paths);
 }
-
 
 
 
@@ -369,20 +368,30 @@ std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadMaterial(aiMaterial *materi
 }
 
 
-std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type)
+std::shared_ptr<rdr::Texture> AssetImporterImpl::LoadTexture(std::filesystem::path filePath, rdr::TextureUsage type, uint8_t channels)
 {
-	unsigned char *data = nullptr;
+	assert(channels <= 4);
+
+	using namespace std::string_literals;
+	unsigned char* data = nullptr;
 	int width, height, nrChannels;
+	rdr::Format format = type == rdr::TextureUsage::DIFFUSE ? rdr::Format::kRGBA8UN_SRGB : rdr::Format::kRGBA8UN;
 
 	if (!AssetManager::Instance().ContainsTexture(filePath.string()))
 	{
-		//Using STBI_rgb_alpha means forcing 4 components for the texture.
-		data = stbi_load(filePath.string().c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+		if (stbi_is_hdr(filePath.string().c_str()))
+			{
+				format = rdr::Format::kRGBA32F;
+				data = reinterpret_cast<unsigned char*>(stbi_loadf(filePath.string().c_str(), &width, &height, &nrChannels, channels));
+			}
+		else
+			data = stbi_load(filePath.string().c_str(), &width, &height, &nrChannels, channels);
 		if (!data)
 		{
 			Log(LogLevel::Error, "Failed to load a texture at : " + filePath.string());
 		}
-		return AssetManager::Instance().AddTexture(std::make_shared<rdr::Texture>(m_pRenderDevice, data, filePath.string(), width, height, 4, type, type == rdr::TextureUsage::DIFFUSE ? rdr::Format::kRGBA8UN_SRGB : rdr::Format::kRGBA8UN));
+		
+		return AssetManager::Instance().AddTexture(std::make_shared<rdr::Texture>(m_pRenderDevice, data, filePath.string(), width, height, channels, type, format));
 	}
 	else
 	{
