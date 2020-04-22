@@ -65,8 +65,8 @@ namespace noctis::rdr
 				uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 				uavDesc.Texture2D.MipSlice = 0;
 			}
-
-			hResult = renderDevice->GetDevice()->CreateUnorderedAccessView(m_pTexture.Get(), &uavDesc, m_pTextureUAV.GetAddressOf());
+			//TODO:: Some formats are not supported for unorderred views, for now it is not needed but this will have to dealt with.
+			//hResult = renderDevice->GetDevice()->CreateUnorderedAccessView(m_pTexture.Get(), &uavDesc, m_pTextureUAV.GetAddressOf());
 
 			renderDevice->GetDeviceContext()->GenerateMips(m_pTextureSRV.Get());
 			if (FAILED(hResult))
