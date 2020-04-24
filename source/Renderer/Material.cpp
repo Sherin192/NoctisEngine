@@ -41,7 +41,8 @@ void PhongMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice)
 		if (texture)
 		{
 			renderDevice->SetSampler(texture->GetType(), 1, texture->GetSampler());
-			renderDevice->GetDeviceContext()->PSSetShaderResources(texture->GetType() == HEIGHT ? NORMAL : texture->GetType(), 1, texture->GetSRV().GetAddressOf());
+			texture->Bind(renderDevice, AccessType::Read);
+			//renderDevice->GetDeviceContext()->PSSetShaderResources(texture->GetType() == HEIGHT ? NORMAL : texture->GetType(), 1, texture->GetSRV().GetAddressOf());
 		}
 	}
 
@@ -68,7 +69,7 @@ void PBRMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice)
 		if (texture)
 		{
 			renderDevice->SetSampler(texture->GetType(), 1, texture->GetSampler());
-			renderDevice->GetDeviceContext()->PSSetShaderResources(texture->GetType(), 1, texture->GetSRV().GetAddressOf());
+			texture->Bind(renderDevice, AccessType::Read);
 		}
 	}
 	m_cbuffer.Bind(renderDevice, 2); 

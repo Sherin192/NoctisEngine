@@ -22,6 +22,10 @@ namespace noctis::rdr
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>		GetSRV()	const noexcept;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>			GetRTV()	const noexcept;
 		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>		GetUAV()	const noexcept;
+		void													Bind(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept;
+		void													Unbind(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept;
+		void													BindCompute(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept;
+		void													UnbindCompute(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept;
 
 		std::shared_ptr<Sampler>& GetSampler();
 

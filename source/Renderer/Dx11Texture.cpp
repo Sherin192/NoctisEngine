@@ -3,6 +3,10 @@
 namespace noctis::rdr
 {
 
+//------------------------------------------------------------------------------------
+//		NoctisToDx11Format: Converts Noctis formats into Dx11 formats.
+//------------------------------------------------------------------------------------
+
 	auto NoctisToDx11Format(Format format)
 	{
 		switch (format)
@@ -14,6 +18,13 @@ namespace noctis::rdr
 		default:			return DXGI_FORMAT_R8G8B8A8_UNORM;
 		};
 	}
+
+//====================================================================================
+
+
+
+
+
 //------------------------------------------------------------------------------------
 //		Dx11Texture Constructor:
 //------------------------------------------------------------------------------------
@@ -186,6 +197,75 @@ namespace noctis::rdr
 
 
 //------------------------------------------------------------------------------------
+//		Bind: Bind the texture to the traditional pipeline, currently only to the PS.
+//------------------------------------------------------------------------------------
+
+	void Dx11Texture::Bind(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept
+	{
+		//if (type == AccessType::Read)
+			renderDevice->GetDeviceContext()->PSSetShaderResources(slot, 1, GetSRV().GetAddressOf());
+		//TODO:: Binding an uav to the pixel shader requires binding the rtv and dsv at the same time
+		// with OMSetRenderTargetsAndUnorderedAccessViews call, as they share the same slots.
+		//Currently there isn't a use for it, however it might need to be implemented in the future.
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		Unbind: Unbind a resource from the traditional pipeline by binding a null view.
+//------------------------------------------------------------------------------------
+
+	void Dx11Texture::Unbind(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept
+	{
+		static ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+		renderDevice->GetDeviceContext()->PSSetShaderResources(slot, 1, nullSRV);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		BindCompute: Bind the texture to the compute pipeline.
+//------------------------------------------------------------------------------------
+
+	void Dx11Texture::BindCompute(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept
+	{
+		if (type == AccessType::Read)
+			renderDevice->GetDeviceContext()->CSSetShaderResources(slot, 1, GetSRV().GetAddressOf());
+		else
+			renderDevice->GetDeviceContext()->CSSetUnorderedAccessViews(slot, 1, GetUAV().GetAddressOf(), nullptr);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		UnbindCompute: Unbind a resource from the compute pipeline by binding a null view.
+//------------------------------------------------------------------------------------
+
+	void Dx11Texture::UnbindCompute(std::shared_ptr<RenderDevice>& renderDevice, AccessType type, int8_t slot) const noexcept
+	{
+		ID3D11UnorderedAccessView* const nullUAV[] = { nullptr };
+		renderDevice->GetDeviceContext()->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
 //		GetSampler: Returns the sampler.
 //------------------------------------------------------------------------------------
 	std::shared_ptr<Sampler>& Dx11Texture::GetSampler() 
@@ -194,4 +274,4 @@ namespace noctis::rdr
 	}
 
 //====================================================================================
-}
+} //noctis::rdr

@@ -16,6 +16,7 @@ namespace noctis::rdr
 	//Do not reorder those enums, and add only to the end just before UNSPECIFIED as they are used as slot values for shader resources.
 	enum TextureUsage : unsigned int { DIFFUSE = 0, ALBEDO = 0, SPECULAR = 1, METALLIC = 1, NORMAL = 2, HEIGHT = 3, ROUGHNESS = 3, OPACITY =4, EMISSIVE =5, AMBIENT_OCCLUSION = 6, COUNT, CUBE_MAP, RTV, HDR, UNSPECIFIED };
 
+	enum class AccessType { Read, Write, ReadWrite };
 
 	enum ComparisonFunc
 	{
