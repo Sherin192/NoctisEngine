@@ -54,11 +54,11 @@ namespace noctis::rdr
 	MakeAddressUVW(Border);
 	MakeAddressUVW(MirrorOnce);
 
-	struct AddressWrap			{};
-	struct AddressClamp			{};
-	struct AddressMirror		{};
-	struct AddressBorder		{};
-	struct AddressMirrorOnce	{};
+	struct AddressWrap : public AddressUWrap, AddressVWrap, AddressWWrap {};
+	struct AddressClamp	: public AddressUClamp, AddressVClamp, AddressWClamp {};
+	struct AddressMirror : public AddressUMirror, AddressVMirror, AddressWMirror {};
+	struct AddressBorder : public AddressUBorder, AddressVBorder, AddressWBorder {};
+	struct AddressMirrorOnce : public AddressUMirrorOnce, AddressVMirrorOnce, AddressWMirrorOnce {};
 
 	struct CompareNever			{};
 	struct CompareLess			{};
@@ -95,7 +95,6 @@ namespace noctis::rdr
 	using SamplerPointClampNotEqual		= SamplerType<FilterPoint, AddressClamp, CompareNotEqual>;
 	using SamplerPointClampGreaterEqual	= SamplerType<FilterPoint, AddressClamp, CompareGreaterEqual>;
 	using SamplerPointClampAlways		= SamplerType<FilterPoint, AddressClamp, CompareAlways>;
-
 
 	enum FilterMode
 	{
