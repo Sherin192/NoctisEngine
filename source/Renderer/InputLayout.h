@@ -91,8 +91,9 @@ namespace noctis::rdr
 		virtual void Bind(std::shared_ptr<RenderDevice>& renderDevice, VertexShader& shader) = 0;
 		virtual void Bind(std::shared_ptr<RenderDevice>& renderDevice) = 0;
 
-		const uint16_t GetStride() const noexcept { return stride; }
-		const uint32_t GetOffset() const noexcept { return offset; }
+		const uint16_t	GetStride() const noexcept { return stride; }
+		const uint32_t	GetOffset() const noexcept { return offset; }
+		const auto		GetNumberElements() const noexcept { return m_elements.size(); }
 
 	protected:
 		VertexElementLayout(std::initializer_list<VertexElement>&& elements)
