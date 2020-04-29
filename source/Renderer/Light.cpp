@@ -32,6 +32,8 @@ Model& NoctisLight::GetModel(std::shared_ptr<RenderDevice>& renderDevice) const 
 
 void NoctisLight::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 {
+	if (!m_enabled)
+		return;
 	m_model->SetTransform(m_transform);
 	std::string name = "_LightMaterial";
 	std::shared_ptr<Material> material;
