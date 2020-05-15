@@ -1,18 +1,5 @@
 #include "LightHelpers.hlsl"
 
-cbuffer ConstantBufferPerObject : register(b0)
-{
-	float4x4 world;								// 64 bytes
-	//----------------------------------
-	float4x4 worldInvTranspose;					// 64 bytes
-	//----------------------------------
-	float4x4 worldViewProj;						// 64 bytes
-	//----------------------------------
-	GPUMaterial material;						// 48 bytes
-	//----------------------------------
-};												//240 bytes total
-												//304 testing
-
 struct vs_Input
 {
 	float3 position : POSITION;

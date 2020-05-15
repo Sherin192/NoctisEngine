@@ -22,9 +22,10 @@ void CubeMap::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& cam)
 	auto view = cam.GetView();
 	view.data = glm::mat4(glm::mat3(view.data));
 	static auto transform = Transform().AsMatrix();
-	math::Nmat4 WVP = cam.GetProj() * view * transform;
+	//math::Nmat4 WVP = cam.GetProj() * view * transform;
 
-	CBModelData cbData(transform, WVP);
+	//CBModelData cbData(transform, WVP);
+	CBModelData cbData(transform, view, cam.GetProj());
 
 	//Update and bind Model constant buffer
 	m_cbuffer.Update(renderDevice, cbData);

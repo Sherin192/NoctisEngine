@@ -6,7 +6,6 @@ namespace noctis::rdr
 
 PhongMaterial::GPUMaterial PhongMaterial::defaultMaterial = GPUMaterial{
 										{ 1.0f, 1.0f, 1.0f, 1.0f },
-										{ 1.0f, 1.0f, 1.0f, 1.0f },
 										{ 1.0f, 1.0f, 1.0f, 256.0f },
 										{ 1.0f, 1.0f, 1.0f, 1.0f },
 										0, 0, 0, 0

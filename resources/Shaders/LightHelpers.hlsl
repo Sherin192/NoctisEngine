@@ -11,12 +11,23 @@
 
 
 
+cbuffer ConstantBufferPerObject : register(b0)
+{
+	float4x4 world; // 64 bytes
+	//----------------------------------
+	float4x4 worldView; // 64 bytes
+	//----------------------------------
+	float4x4 worldInvTranspose; // 64 bytes
+	//----------------------------------
+	float4x4 worldViewProj; // 64 bytes
+	//----------------------------------
+};												//272 bytes total
+
+
 static const float PI = 3.141592;
 
 struct GPUMaterial
 {
-	float4 ambient;								// 16 bytes
-	//-----------------------------------
 	float4 diffuse;								// 16 bytes
 	//-----------------------------------
 	float4 specular;							// 16 bytes
@@ -25,16 +36,14 @@ struct GPUMaterial
 	//-----------------------------------
 	int textureBitField;						// 4  bytes
 	float3 pad;									// 12 bytes
-};												// 80 bytes total
+};												// 64 bytes total
 
 struct PBRMaterialData
 {
     float4 albedo;								// 16 bytes
 	//-----------------------------------
     float metallic;								// 4  bytes
-	//-----------------------------------
     float roughness;							// 4  bytes
-	//-----------------------------------
     float ao;									// 4  bytes
     int textureBitField;						// 4  bytes
 };												// 32 bytes total
@@ -46,7 +55,7 @@ struct DirectionalLight
 	float4 color;								// 16 bytes
 	//-----------------------------------
     float3 direction;							// 12 bytes
-	float pad;									// 4  bytes
+	bool enabled;								// 4  bytes
 	//----------------------------------
 };												//32 bytes total
 
@@ -55,7 +64,7 @@ struct PointLight
 	float4 color;								// 16 bytes
 	//----------------------------------
 	float3 position;							// 12 bytes
-	float pad;								// 4  bytes
+	float pad;									// 4  bytes
 	//----------------------------------
 	float3 attenuation;							// 12 bytes
 	bool enabled;								// 4  bytes
@@ -78,6 +87,25 @@ struct SpotLight
 	float pad;									// 4  bytes
 	//----------------------------------
 };												//96 bytes total
+
+
+#define MAX_POINT_LIGHTS 8
+
+cbuffer ConstantBufferPerFrame : register(b1)
+{
+	DirectionalLight dirLight; // 32 bytes
+	//----------------------------------
+	PointLight pointLights[MAX_POINT_LIGHTS]; // 48 * 8 = 384 bytes
+	//----------------------------------
+//	SpotLight spotLight;
+	//----------------------------------
+	float3 eyePos; // 12 bytes
+	float ambient; // 4  bytes
+	//----------------------------------
+	float gammaCorrection; // 4 bytes
+	bool enabledNormalMapping; // 4  bytes
+	int2 pad; // 12 bytes
+};		
 
 //--------------------------------------------------------------------------------------
 //Helper function for texture bitfield tests
@@ -103,13 +131,15 @@ float BlinnPhong(float3 light, float3 view, float3 normal)
 
 
 
-void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 normal, float3 eye, out float4 diffuse, out float4 specular)
+void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 normal, float3 eye, out float4 diffuse, out float4 specular, bool blinn = false)
 {
 	float3 L = normalize(-light.direction);
 	float NdL = max(0.0f, dot(L, normal));
 	diffuse = NdL * light.color;
-
-	specular = light.color * pow(BlinnPhong(L, eye, normal), mat.specular.w);
+	if (blinn)
+		specular = light.color * pow(BlinnPhong(L, eye, normal), mat.specular.w);
+	else
+		specular = light.color * pow(Phong(-L, eye, normal), mat.specular.w);
 }
 
 

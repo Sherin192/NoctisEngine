@@ -23,6 +23,7 @@ namespace noctis::rdr
 	struct CBModelData
 	{
 		math::Nmat4	world;
+		math::Nmat4	worldView;
 		math::Nmat4 worldInvTranspose;
 		math::Nmat4	worldViewProj;
 
@@ -48,6 +49,9 @@ namespace noctis::rdr
 		PointLight pointLights[8];
 		math::Nvec3 eyePos;
 		float ambient;
+		float gammaCorrection;
+		int enabledNormalMapping;
+		int pad[2];
 	};
 
 //====================================================================================

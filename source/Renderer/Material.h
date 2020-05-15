@@ -44,9 +44,6 @@ class PhongMaterial : public Material
 	//------------------------------------------------------------------------------------
 	struct GPUMaterial
 	{
-		//-----------------------------------
-		math::Nvec4 ambient;					// 16 bytes
-		//-----------------------------------
 		math::Nvec4 diffuse;					// 16 bytes
 		//-----------------------------------
 		math::Nvec4 specular;					// 16 bytes
@@ -68,7 +65,7 @@ public:
 		m_cbuffer.Init(renderDevice, true, &m_material);
 	}
 
-	void SetAmbient(math::Nvec4 color) { m_material.ambient = color; }
+	//void SetAmbient(math::Nvec4 color) { m_material.ambient = color; }
 	void SetDiffuse(math::Nvec4 color) { m_material.diffuse = color; }
 	void SetSpecular(math::Nvec4 color) { m_material.specular = color; }
 	void AddTexture(std::shared_ptr<Texture> texture);

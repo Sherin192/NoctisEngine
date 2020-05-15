@@ -7,30 +7,7 @@
 // - Michal Siejak's PBR project (https://github.com/Nadrin)
 // - Physically Based Rendering in Filament (https://google.github.io/filament/Filament.md.html#listing_glslbrdf)
 
-#define MAX_POINT_LIGHTS 8
 
-cbuffer ConstantBufferPerFrame : register(b1)
-{
-    DirectionalLight dirLight; // 32 bytes
-	//----------------------------------
-	PointLight pointLights[MAX_POINT_LIGHTS]; // 48 * 8 = 384 bytes
-	//----------------------------------
-//	SpotLight spotLight;
-	//----------------------------------
-    float3 eyePos; // 12 bytes
-    float ambient; // 4  bytes
-	//----------------------------------
-};												//432 bytes total
-
-cbuffer ConstantBufferPerObject : register(b0)
-{
-    float4x4 world; // 64 bytes
-	//----------------------------------
-    float4x4 worldInvTranspose; // 64 bytes
-	//----------------------------------
-    float4x4 worldViewProj; // 64 bytes
-	//----------------------------------
-    };												//272 bytes total
 
 cbuffer ConstantBufferMaterial : register(b2)
 {
@@ -50,9 +27,10 @@ struct ps_Input
 {
     float4 posH : SV_Position;
     float3 posW : POSITION;
-    float3 normalW : NORMAL;
     float2 texCoord : TEXCOORD;
-    float3x3 TBN : TBN;
+	float3 T : TANGENT;
+	float3 B : BITANGENT;
+	float3 N : NORMAL;
 };
 
 static const float Epsilon = 0.00001;
@@ -91,7 +69,7 @@ float3 fresnelSchlick(float3 F0, float cosTheta)
 float4 PS(ps_Input pin) : SV_TARGET
 {
 	//Interpolating normal can unnormalize it, so normalize it.
-	float3 normal = normalize(pin.normalW);
+	float3 normal = normalize(pin.N);
 
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
 	{
@@ -100,7 +78,8 @@ float4 PS(ps_Input pin) : SV_TARGET
 		//mul(x, y) if x is a vector it is treated as row-major, if y is a vector is treated as column-major.
 		//Since TBN was creaded with T, B and N as rows it is row-major hence the below multiplication ca be done this way as well:
 		//mul(transpose(pin.TBN), normal) 
-		normal = normalize(mul(normal, pin.TBN).xyz);
+		float3x3 TBN = float3x3(pin.T, pin.B, pin.N);
+		normal = normalize(mul(normal, TBN).xyz);
 	}
 
 	float ao = 1.0f;

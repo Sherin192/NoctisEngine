@@ -1,30 +1,5 @@
 #include "LightHelpers.hlsl"
 
-#define MAX_POINT_LIGHTS 8
-
-cbuffer ConstantBufferPerFrame : register(b1)
-{
-	DirectionalLight dirLight;					// 64 bytes
-	//----------------------------------
-	PointLight pointLights[MAX_POINT_LIGHTS];	// 512 bytes
-	//----------------------------------
-//	SpotLight spotLight;
-	//----------------------------------
-	float3 eyePos;								// 12 bytes
-	float ambient;								// 4  bytes
-	//----------------------------------
-};												//720 bytes total
-
-cbuffer ConstantBufferPerObject : register(b0)
-{
-	float4x4 world;								// 64 bytes
-	//----------------------------------
-	float4x4 worldInvTranspose;					// 64 bytes
-	//----------------------------------
-	float4x4 worldViewProj;						// 64 bytes
-	//----------------------------------
-};												//272 bytes total
-
 cbuffer ConstantBufferMaterial : register(b2)
 {
 	GPUMaterial material;						// 80 bytes
@@ -36,31 +11,33 @@ Texture2D TexSpecular : register(t1);
 Texture2D TexNormal : register(t2);
 Texture2D TexOpacity : register(t4);
 Texture2D TexEmissive : register(t5);
-sampler Sampler : register(s0);
-
+SamplerState Sampler : register(s3);
+//sampler SamplerLinearWrap : register(s3);
 
 struct ps_Input
 {
 	float4 posH : SV_Position;
 	float3 posW : POSITION;
-	float3 normalW : NORMAL;
 	float2 texCoord : TEXCOORD;
-	float3x3 TBN : TBN;
+	float3 T : TANGENT;
+	float3 B : BITANGENT;
+	float3 N : NORMAL;
 };
 
 float4 PS(ps_Input pin) : SV_TARGET
 {
 	//Interpolating normal can unnormalize it, so normalize it.
-	float3 normal = normalize(pin.normalW);
+	float3 normal = normalize(pin.N);
 
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
+	if (enabledNormalMapping && HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
 	{
 		normal = TexNormal.Sample(Sampler, pin.texCoord).rgb;
-		normal = normalize(normal * 2.0f - 1.0f);
+		normal = normal * 2.0f - 1.0f;
 		//mul(x, y) if x is a vector it is treated as row-major, if y is a vector is treated as column-major.
 		//Since TBN was creaded with T, B and N as rows it is row-major hence the below multiplication ca be done this way as well:
 		//mul(transpose(pin.TBN), normal) 
-		normal = normalize(mul(normal, pin.TBN).xyz);
+		float3x3 TBN = float3x3(normalize(pin.T), normalize(pin.B), normalize(pin.N));
+		normal = normalize(mul(normal, TBN).xyz);
 	}
 	
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_HEIGHT))
@@ -76,7 +53,8 @@ float4 PS(ps_Input pin) : SV_TARGET
 
 		// normal = tangent x bitangent
 		normal = cross(normalize(pU - p), normalize(pV - p));
-		normal = normalize(mul(normal, pin.TBN).xyz);
+		float3x3 TBN = float3x3(pin.T, pin.B, pin.N);
+		normal = normalize(mul(normal, TBN).xyz);
 	}
 	
 	float3 toEye = normalize(eyePos - pin.posW);
@@ -112,8 +90,8 @@ float4 PS(ps_Input pin) : SV_TARGET
 	{
 		emissive = TexEmissive.Sample(Sampler, pin.texCoord);
 	}
-
-	CalculateDirectionalLight(mat, dirLight, normal, toEye, diffuse, spec);
+	if (dirLight.enabled)
+		CalculateDirectionalLight(mat, dirLight, normal, toEye, diffuse, spec);
 
 	[unroll]
 	for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
@@ -131,7 +109,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	litColor.a = mat.diffuse.w;
 	
 	if (!HasTextureMap(material.textureBitField, TEX_SLOT_DIFFUSE))
-		return pow(litColor, 2.2f); 
+		return pow(litColor, 2.2f);
 	else 
 		return litColor;
 }

@@ -10,7 +10,8 @@ namespace noctis::rdr
 	CBModelData::CBModelData(Nmat4 w, Nmat4 v, Nmat4 p)
 	{
 		world = w;
-		worldViewProj = w * v * p;
+		worldView = v * w;
+		worldViewProj = p * v * w;
 		worldInvTranspose = math::inverseTranspose(w);
 	}
 
