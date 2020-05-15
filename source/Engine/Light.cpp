@@ -3,7 +3,6 @@
 #include "Model.h" //TODO: Debug Only 
 #endif //_DEBUG
 #include "Light.h"
-#include "NoctisPipelinePass.h"
 
 namespace noctis::rdr
 {
@@ -45,7 +44,7 @@ void NoctisLight::Render(std::shared_ptr<RenderDevice>& renderDevice, Camera& ca
 	}
 
 	PhongMaterial* derived = dynamic_cast<PhongMaterial*>(&*material);
-	derived->SetAmbient(math::Nvec4(0.0f, 0.0f, 0.0f, 0.0f));
+	//derived->SetAmbient(math::Nvec4(0.0f, 0.0f, 0.0f, 0.0f));
 	derived->SetDiffuse(m_color);
 	derived->SetSpecular(m_color);
 	derived->Update(renderDevice);

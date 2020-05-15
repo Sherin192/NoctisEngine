@@ -21,6 +21,10 @@ add_library(Engine
     Logger.h
     Logger.cpp
     NoctisMacros.h
+    Light.h
+    Light.cpp
+    Model.h
+    Model.cpp
 )
 
 target_include_directories(Engine PUBLIC

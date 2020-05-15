@@ -3,7 +3,7 @@
 #include "AssetManager.h"
 #include "Renderer/NoctisTexture.h"
 #include "Renderer/Mesh.h"
-#include "Renderer/Model.h"
+#include "Engine/Model.h"
 #include "Renderer/NoctisCubeMap.h"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -448,10 +448,10 @@ std::shared_ptr<rdr::Material> AssetImporterImpl::FillMaterial(const aiMaterial*
 	{
 		auto material = rdr::PhongMaterial::defaultMaterial;
 		aiColor3D color;
-		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_AMBIENT, color))
+		/*if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_AMBIENT, color))
 		{
 			material.ambient = { color.r, color.g, color.b, 1.0f };
-		}
+		}*/
 		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 		{
 			material.diffuse = { color.r, color.g, color.b, 1.0f };

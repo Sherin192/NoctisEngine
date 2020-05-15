@@ -8,14 +8,10 @@ add_library(Renderer
     Dx11Utils.h
     InputLayout.h
     Dx11InputLayout.cpp
-    Light.h
-    Light.cpp
     Material.h
     Material.cpp
     Mesh.h
     Mesh.cpp
-    Model.h
-    Model.cpp
     NoctisTexture.h
     NoctisTexture.cpp
     Dx11Texture.h

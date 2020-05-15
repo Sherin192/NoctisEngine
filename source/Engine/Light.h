@@ -1,7 +1,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 #include "Core_pch.h"
-#include "NoctisRenderable.h"
+#include "Renderer/NoctisRenderable.h"
 #include "Transform.h"
 //------------------------------------------------------------------------------------
 //		Forward Declarations:
@@ -44,7 +44,7 @@ struct Light
 struct DirectionalLight : public Light
 {
 	math::Nvec3 direction;
-	float pad;
+	uint32_t enabled;
 };
 
 //====================================================================================
