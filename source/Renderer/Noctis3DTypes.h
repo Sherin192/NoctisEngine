@@ -76,8 +76,13 @@ namespace noctis::rdr
 	struct BorderWhiteTransparent {};
 
 	template <typename... Args>
-	struct SamplerType : public Args... {};
-	
+	struct SamplerType : public Args... 
+	{};
+
+//------------------------------------------------------------------------------------
+//		Point Filter Types
+//------------------------------------------------------------------------------------
+
 	using SamplerPointWrapNever			= SamplerType<FilterPoint, AddressWrap, CompareNever>;
 	using SamplerPointWrapLess			= SamplerType<FilterPoint, AddressWrap, CompareLess>;
 	using SamplerPointWrapEqual			= SamplerType<FilterPoint, AddressWrap, CompareEqual>;
@@ -96,6 +101,109 @@ namespace noctis::rdr
 	using SamplerPointClampGreaterEqual	= SamplerType<FilterPoint, AddressClamp, CompareGreaterEqual>;
 	using SamplerPointClampAlways		= SamplerType<FilterPoint, AddressClamp, CompareAlways>;
 
+	using SamplerPointMirrorNever		= SamplerType<FilterPoint, AddressMirror, CompareNever>;
+	using SamplerPointMirrorLess		= SamplerType<FilterPoint, AddressMirror, CompareLess>;
+	using SamplerPointMirrorEqual		= SamplerType<FilterPoint, AddressMirror, CompareEqual>;
+	using SamplerPointMirrorLessEqual	= SamplerType<FilterPoint, AddressMirror, CompareLessEqual>;
+	using SamplerPointMirrorGreater		= SamplerType<FilterPoint, AddressMirror, CompareGreater>;
+	using SamplerPointMirrorNotEqual	= SamplerType<FilterPoint, AddressMirror, CompareNotEqual>;
+	using SamplerPointMirrorGreaterEqual= SamplerType<FilterPoint, AddressMirror, CompareGreaterEqual>;
+	using SamplerPointMirrorAlways		= SamplerType<FilterPoint, AddressMirror, CompareAlways>;
+
+	using SamplerPointBorderNever		= SamplerType<FilterPoint, AddressBorder, CompareNever>;
+	using SamplerPointBorderLess		= SamplerType<FilterPoint, AddressBorder, CompareLess>;
+	using SamplerPointBorderEqual		= SamplerType<FilterPoint, AddressBorder, CompareEqual>;
+	using SamplerPointBorderLessEqual	= SamplerType<FilterPoint, AddressBorder, CompareLessEqual>;
+	using SamplerPointBorderGreater		= SamplerType<FilterPoint, AddressBorder, CompareGreater>;
+	using SamplerPointBorderNotEqual	= SamplerType<FilterPoint, AddressBorder, CompareNotEqual>;
+	using SamplerPointBorderGreaterEqual= SamplerType<FilterPoint, AddressBorder, CompareGreaterEqual>;
+	using SamplerPointBorderAlways		= SamplerType<FilterPoint, AddressBorder, CompareAlways>;
+
+//====================================================================================
+
+//------------------------------------------------------------------------------------
+//		Linear Filter Types
+//------------------------------------------------------------------------------------
+
+	using SamplerLinearWrapNever			= SamplerType<FilterLinear, AddressWrap, CompareNever>;
+	using SamplerLinearWrapLess				= SamplerType<FilterLinear, AddressWrap, CompareLess>;
+	using SamplerLinearWrapEqual			= SamplerType<FilterLinear, AddressWrap, CompareEqual>;
+	using SamplerLinearWrapLessEqual		= SamplerType<FilterLinear, AddressWrap, CompareLessEqual>;
+	using SamplerLinearWrapGreater			= SamplerType<FilterLinear, AddressWrap, CompareGreater>;
+	using SamplerLinearWrapNotEqual			= SamplerType<FilterLinear, AddressWrap, CompareNotEqual>;
+	using SamplerLinearWrapGreaterEqual		= SamplerType<FilterLinear, AddressWrap, CompareGreaterEqual>;
+	using SamplerLinearWrapAlways			= SamplerType<FilterLinear, AddressWrap, CompareAlways>;
+
+	using SamplerLinearClampNever			= SamplerType<FilterLinear, AddressClamp, CompareNever>;
+	using SamplerLinearClampLess			= SamplerType<FilterLinear, AddressClamp, CompareLess>;
+	using SamplerLinearClampEqual			= SamplerType<FilterLinear, AddressClamp, CompareEqual>;
+	using SamplerLinearClampLessEqual		= SamplerType<FilterLinear, AddressClamp, CompareLessEqual>;
+	using SamplerLinearClampGreater			= SamplerType<FilterLinear, AddressClamp, CompareGreater>;
+	using SamplerLinearClampNotEqual		= SamplerType<FilterLinear, AddressClamp, CompareNotEqual>;
+	using SamplerLinearClampGreaterEqual	= SamplerType<FilterLinear, AddressClamp, CompareGreaterEqual>;
+	using SamplerLinearClampAlways			= SamplerType<FilterLinear, AddressClamp, CompareAlways>;
+
+	using SamplerLinearMirrorNever			= SamplerType<FilterLinear, AddressMirror, CompareNever>;
+	using SamplerLinearMirrorLess			= SamplerType<FilterLinear, AddressMirror, CompareLess>;
+	using SamplerLinearMirrorEqual			= SamplerType<FilterLinear, AddressMirror, CompareEqual>;
+	using SamplerLinearMirrorLessEqual		= SamplerType<FilterLinear, AddressMirror, CompareLessEqual>;
+	using SamplerLinearMirrorGreater		= SamplerType<FilterLinear, AddressMirror, CompareGreater>;
+	using SamplerLinearMirrorNotEqual		= SamplerType<FilterLinear, AddressMirror, CompareNotEqual>;
+	using SamplerLinearMirrorGreaterEqual	= SamplerType<FilterLinear, AddressMirror, CompareGreaterEqual>;
+	using SamplerLinearMirrorAlways			= SamplerType<FilterLinear, AddressMirror, CompareAlways>;
+
+	using SamplerLinearBorderNever			= SamplerType<FilterLinear, AddressBorder, CompareNever>;
+	using SamplerLinearBorderLess			= SamplerType<FilterLinear, AddressBorder, CompareLess>;
+	using SamplerLinearBorderEqual			= SamplerType<FilterLinear, AddressBorder, CompareEqual>;
+	using SamplerLinearBorderLessEqual		= SamplerType<FilterLinear, AddressBorder, CompareLessEqual>;
+	using SamplerLinearBorderGreater		= SamplerType<FilterLinear, AddressBorder, CompareGreater>;
+	using SamplerLinearBorderNotEqual		= SamplerType<FilterLinear, AddressBorder, CompareNotEqual>;
+	using SamplerLinearBorderGreaterEqual	= SamplerType<FilterLinear, AddressBorder, CompareGreaterEqual>;
+	using SamplerLinearBorderAlways			= SamplerType<FilterLinear, AddressBorder, CompareAlways>;
+
+	//====================================================================================
+
+//------------------------------------------------------------------------------------
+//		Anisotropic Filter Types
+//------------------------------------------------------------------------------------
+	
+	using SamplerAnisotropicWrapNever			= SamplerType<FilterAnisotropic, AddressWrap, CompareNever>;
+	using SamplerAnisotropicWrapLess			= SamplerType<FilterAnisotropic, AddressWrap, CompareLess>;
+	using SamplerAnisotropicWrapEqual			= SamplerType<FilterAnisotropic, AddressWrap, CompareEqual>;
+	using SamplerAnisotropicWrapLessEqual		= SamplerType<FilterAnisotropic, AddressWrap, CompareLessEqual>;
+	using SamplerAnisotropicWrapGreater			= SamplerType<FilterAnisotropic, AddressWrap, CompareGreater>;
+	using SamplerAnisotropicWrapNotEqual		= SamplerType<FilterAnisotropic, AddressWrap, CompareNotEqual>;
+	using SamplerAnisotropicWrapGreaterEqual	= SamplerType<FilterAnisotropic, AddressWrap, CompareGreaterEqual>;
+	using SamplerAnisotropicWrapAlways			= SamplerType<FilterAnisotropic, AddressWrap, CompareAlways>;
+
+	using SamplerAnisotropicClampNever			= SamplerType<FilterAnisotropic, AddressClamp, CompareNever>;
+	using SamplerAnisotropicClampLess			= SamplerType<FilterAnisotropic, AddressClamp, CompareLess>;
+	using SamplerAnisotropicClampEqual			= SamplerType<FilterAnisotropic, AddressClamp, CompareEqual>;
+	using SamplerAnisotropicClampLessEqual		= SamplerType<FilterAnisotropic, AddressClamp, CompareLessEqual>;
+	using SamplerAnisotropicClampGreater		= SamplerType<FilterAnisotropic, AddressClamp, CompareGreater>;
+	using SamplerAnisotropicClampNotEqual		= SamplerType<FilterAnisotropic, AddressClamp, CompareNotEqual>;
+	using SamplerAnisotropicClampGreaterEqual	= SamplerType<FilterAnisotropic, AddressClamp, CompareGreaterEqual>;
+	using SamplerAnisotropicClampAlways			= SamplerType<FilterAnisotropic, AddressClamp, CompareAlways>;
+
+	using SamplerAnisotropicMirrorNever			= SamplerType<FilterAnisotropic, AddressMirror, CompareNever>;
+	using SamplerAnisotropicMirrorLess			= SamplerType<FilterAnisotropic, AddressMirror, CompareLess>;
+	using SamplerAnisotropicMirrorEqual			= SamplerType<FilterAnisotropic, AddressMirror, CompareEqual>;
+	using SamplerAnisotropicMirrorLessEqual		= SamplerType<FilterAnisotropic, AddressMirror, CompareLessEqual>;
+	using SamplerAnisotropicMirrorGreater		= SamplerType<FilterAnisotropic, AddressMirror, CompareGreater>;
+	using SamplerAnisotropicMirrorNotEqual		= SamplerType<FilterAnisotropic, AddressMirror, CompareNotEqual>;
+	using SamplerAnisotropicMirrorGreaterEqual	= SamplerType<FilterAnisotropic, AddressMirror, CompareGreaterEqual>;
+	using SamplerAnisotropicMirrorAlways		= SamplerType<FilterAnisotropic, AddressMirror, CompareAlways>;
+
+	using SamplerAnisotropicBorderNever			= SamplerType<FilterAnisotropic, AddressBorder, CompareNever>;
+	using SamplerAnisotropicBorderLess			= SamplerType<FilterAnisotropic, AddressBorder, CompareLess>;
+	using SamplerAnisotropicBorderEqual			= SamplerType<FilterAnisotropic, AddressBorder, CompareEqual>;
+	using SamplerAnisotropicBorderLessEqual		= SamplerType<FilterAnisotropic, AddressBorder, CompareLessEqual>;
+	using SamplerAnisotropicBorderGreater		= SamplerType<FilterAnisotropic, AddressBorder, CompareGreater>;
+	using SamplerAnisotropicBorderNotEqual		= SamplerType<FilterAnisotropic, AddressBorder, CompareNotEqual>;
+	using SamplerAnisotropicBorderGreaterEqual	= SamplerType<FilterAnisotropic, AddressBorder, CompareGreaterEqual>;
+	using SamplerAnisotropicBorderAlways		= SamplerType<FilterAnisotropic, AddressBorder, CompareAlways>;
+
+	//====================================================================================
 	enum FilterMode
 	{
 		kPoint,
