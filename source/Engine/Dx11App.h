@@ -14,7 +14,7 @@ namespace noctis
 		Dx11App(HINSTANCE);
 		virtual ~Dx11App() = default;
 
-		virtual void						Run() override;
+		virtual void						Run() final override;
 
 		virtual bool						Init() override;
 		virtual void						Update(float) = 0;
