@@ -71,7 +71,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	//Interpolating normal can unnormalize it, so normalize it.
 	float3 normal = normalize(pin.N);
 
-	if (HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
+	if (enabledNormalMapping && HasTextureMap(material.textureBitField, TEX_SLOT_NORMAL))
 	{
 		normal = TexNormal.Sample(Sampler, pin.texCoord).rgb;
 		normal = normalize(normal * 2.0f - 1.0f);
@@ -148,7 +148,8 @@ float4 PS(ps_Input pin) : SV_TARGET
 	float3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdL * NdV);
 
 	// Total contribution for this light.
-	directLighting += (diffuseBRDF + specularBRDF)* Lradiance* NdL;
+	if (dirLight.enabled)
+		directLighting += (diffuseBRDF + specularBRDF)* Lradiance* NdL;
 
 
 	[unroll]
@@ -195,7 +196,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * NdL;
 	}
 
-	float3 globalAmbient = pow(ambient, 2.2f) * albedo;
+	float3 globalAmbient = pow(ambient, gammaCorrection) * albedo;
 
 	float3 color = globalAmbient + directLighting;
 

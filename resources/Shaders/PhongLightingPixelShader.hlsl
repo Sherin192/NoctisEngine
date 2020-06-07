@@ -78,7 +78,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 			discard;
 		mat.diffuse = texDiffuse;
 	}
-	float4 globalAmbient = pow(ambient, 2.2f) * mat.diffuse;
+	float4 globalAmbient = pow(ambient, gammaCorrection) * mat.diffuse;
 	
 	if (HasTextureMap(material.textureBitField, TEX_SLOT_SPECULAR))
 	{
@@ -91,14 +91,14 @@ float4 PS(ps_Input pin) : SV_TARGET
 		emissive = TexEmissive.Sample(Sampler, pin.texCoord);
 	}
 	if (dirLight.enabled)
-		CalculateDirectionalLight(mat, dirLight, normal, toEye, diffuse, spec);
+		CalculateDirectionalLight(mat, dirLight, normal, toEye, diffuse, spec, mat.blinn);
 
 	[unroll]
 	for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
 	{
 		if (!pointLights[i].enabled) continue;
 
-		CalculatePointLight(mat, pointLights[i], pin.posW, normal, toEye, Dp, Sp);
+		CalculatePointLight(mat, pointLights[i], pin.posW, normal, toEye, Dp, Sp, mat.blinn);
 
 		diffuse += Dp;
 		spec += Sp;
@@ -109,7 +109,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	litColor.a = mat.diffuse.w;
 	
 	if (!HasTextureMap(material.textureBitField, TEX_SLOT_DIFFUSE))
-		return pow(litColor, 2.2f);
+		return pow(litColor, gammaCorrection);
 	else 
 		return litColor;
 }

@@ -35,7 +35,8 @@ struct GPUMaterial
 	float4 reflect;								// 16 bytes
 	//-----------------------------------
 	int textureBitField;						// 4  bytes
-	float3 pad;									// 12 bytes
+	bool blinn;
+	float2 pad;									// 12 bytes
 };												// 64 bytes total
 
 struct PBRMaterialData
@@ -145,7 +146,7 @@ void CalculateDirectionalLight(GPUMaterial mat, DirectionalLight light, float3 n
 
 
 void CalculatePointLight(GPUMaterial mat, PointLight light, float3 pos, float3 normal, float3 toEye,
-	out float4 diffuse, out float4 spec)
+	out float4 diffuse, out float4 spec, bool blinn = false)
 {
 	// Initialize outputs.
 	diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -165,8 +166,7 @@ void CalculatePointLight(GPUMaterial mat, PointLight light, float3 pos, float3 n
 
 	float diffuseFactor = max(0.0f, dot(normal, lightVec));
 
-    float specFactor = pow(BlinnPhong(lightVec, toEye, normal), mat.specular.w);
-		
+	float specFactor = blinn ? pow(BlinnPhong(lightVec, toEye, normal), mat.specular.w) : pow(Phong(-lightVec, toEye, normal), mat.specular.w);
 	diffuse = diffuseFactor * light.color;
 	spec = specFactor * light.color;
 

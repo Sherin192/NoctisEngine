@@ -3,10 +3,6 @@
 
 // Tone-mapping & gamma correction.
 
-static const float gamma = 2.2;
-static const float exposure = 1.0;
-static const float pureWhite = 1.0;
-
 struct PixelShaderInput
 {
 	float4 position : SV_POSITION;
@@ -24,7 +20,7 @@ struct ps_Input
 
 float4 PS(ps_Input pin) : SV_TARGET
 {
-	float3 color = SceneTexture.Sample(Sampler, pin.texCoord).rgb * exposure;
+	float3 color = SceneTexture.Sample(Sampler, pin.texCoord).rgb;
 
 	// Reinhard tonemapping operator.
 	// see: "Photographic Tone Reproduction for Digital Images", eq. 4
@@ -38,5 +34,5 @@ float4 PS(ps_Input pin) : SV_TARGET
 	//float3 mappedColor = (mappedLuminance / luminance) * color;
 
 	// Gamma correction.
-	return float4(pow(color, 1.0f / gamma), 1.0f);
+	return float4(pow(color, 1.0f / gammaCorrection), 1.0f);
 }

@@ -51,7 +51,8 @@ class PhongMaterial : public Material
 		math::Nvec4 reflect;					// 16 bytes
 		//-----------------------------------
 		int textureBitField;					// 4  bytes
-		float pad[3];							// 12 bytes
+		int blinn;
+		float pad[2];							// 12 bytes
 		//-----------------------------------
 	};	//										   80 bytes total
 
