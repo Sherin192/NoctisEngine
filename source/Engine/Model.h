@@ -56,11 +56,11 @@ private:
 };
 
 class Node
-{
+{	
 public:
 	Node() : m_transform() {}
 	Node(Transform& transform) : m_transform(transform) {}
-	Node(Transform& transform, Model* owner) : m_transform(transform), m_pOwner(owner) {}
+	Node(Transform& transform, Model* owner, std::string&& name = "") : m_transform(transform), m_pOwner(owner), m_name(name) {}
 //private:
 	std::string									m_name;
 	std::vector<std::unique_ptr<Node>>			m_pNodes;
