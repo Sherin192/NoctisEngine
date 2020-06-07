@@ -56,6 +56,10 @@ namespace noctis::rdr
 
 		void Bind(std::shared_ptr<RenderDevice>& renderDevice);
 
+		void BindSampler(std::shared_ptr<RenderDevice>& renderDevice, uint8_t slot, std::shared_ptr<Sampler> sampler);
+
+		void BindSamplers(std::shared_ptr<RenderDevice>& renderDevice, uint8_t slot, uint8_t n, std::shared_ptr<Sampler> sampler);
+
 		[[nodiscard]] auto* GetByteCode() const noexcept;
 	private:
 		void Init(std::shared_ptr<RenderDevice>& renderDevice);
@@ -127,9 +131,48 @@ namespace noctis::rdr
 	}
 
 //====================================================================================
+
+
+
+//------------------------------------------------------------------------------------
+//		BindSampler: Bind a sampler to the pipeline.
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	void Dx11Shader<ShaderType>::BindSampler(std::shared_ptr<RenderDevice>& renderDevice, uint8_t slot, std::shared_ptr<Sampler> sampler)
+	{
+		BindSamplers(renderDevice, slot, 1u, sampler);
+	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		BindSamplers: Bind n samplers to the pipeline.
+//------------------------------------------------------------------------------------
+	template <typename ShaderType>
+	void Dx11Shader<ShaderType>::BindSamplers(std::shared_ptr<RenderDevice>& renderDevice, uint8_t slot, uint8_t n, std::shared_ptr<Sampler> sampler)
+	{
+		ShaderType* shaderType = static_cast<ShaderType*>(this);
+
+		if constexpr (std::is_same_v<VertexShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->VSSetSamplers(slot, n, sampler->GetDx11Sampler().GetAddressOf());
+		}
+		else if constexpr (std::is_same_v<PixelShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->PSSetSamplers(slot, n, sampler->GetDx11Sampler().GetAddressOf());
+		}
+		else if constexpr (std::is_same_v<ComputeShader, std::decay_t<decltype(*shaderType)>>)
+		{
+			renderDevice->GetDeviceContext()->CSSetSamplers(slot, n, sampler->GetDx11Sampler().GetAddressOf());
+		}
+	}
 	
-	
-	
+//====================================================================================
+
 	
 	
 //------------------------------------------------------------------------------------
@@ -188,6 +231,9 @@ namespace noctis::rdr
 				Log(LogLevel::Error, "Failed to compile Compute Shader.\n"s + (const char*)errorMessages->GetBufferPointer());
 			hResult = renderDevice->GetDevice()->CreateComputeShader(m_pByteCode->GetBufferPointer(), m_pByteCode->GetBufferSize(), NULL, &m_pShaderObject);
 		}
+
+
+
 	};
 
 //====================================================================================

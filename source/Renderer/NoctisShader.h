@@ -46,7 +46,7 @@ namespace noctis::rdr
 	class PixelShader : public Dx11Shader<PixelShader>
 	{
 	public:
-	using Base = Dx11Shader<PixelShader>;
+		using Base = Dx11Shader<PixelShader>;
 		using type = PixelShader;
 
 		PixelShader(std::shared_ptr<RenderDevice>& renderDevice, std::wstring&& source) : Base(renderDevice, std::forward<std::wstring&&>(source)) {}

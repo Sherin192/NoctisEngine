@@ -84,8 +84,8 @@ namespace noctis::rdr
 			{
 				Log(LogLevel::Error, "Failed to generate mips.");
 			}
-
-			m_pSampler = std::make_unique<Sampler>(renderDevice, SamplerType<FilterLinear, AddressUWrap, AddressVWrap, AddressWClamp, CompareNever>{});
+			//TODO: Samplers should not be associated with each texture.
+			m_pSampler = std::make_unique<Sampler>(renderDevice, SamplerType<FilterLinear, AddressWrap, CompareNever>{});
 		}
 		else
 		{
