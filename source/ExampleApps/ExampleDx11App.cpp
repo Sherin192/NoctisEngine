@@ -2,7 +2,7 @@
 #include "Renderer/NoctisRenderDevice.h"
 #include "Engine/AssetImporter.h"
 #include "Engine/CameraFPS.h"
-#include "Renderer/Model.h"
+#include "Engine/Model.h"
 #include "Renderer/NoctisCubeMap.h"
 #include "NoctisPipelinePass.h"
 #include "Renderer/NoctisSampler.h"
@@ -16,7 +16,7 @@ namespace noctis
 	ExampleDx11App::ExampleDx11App(HINSTANCE hInstance)
 		:Dx11App(hInstance)
 	{
-		Dx11App::Init();
+		//Dx11App::Init();
 	}
 
 
@@ -29,7 +29,6 @@ namespace noctis
 	bool ExampleDx11App::Init()
 	{
 		static_assert(sizeof(CBFrameData) % 16 == 0);
-
 		AssetImporter::Instance().Init(m_pRenderDevice);
 		MaterialPool::Instance().Init(m_pRenderDevice);
 		
@@ -39,11 +38,9 @@ namespace noctis
 		//Load textures for the model, this is done only for generated models.
 		std::shared_ptr<Texture> crateDiffuse = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\container2.png", TextureUsage::DIFFUSE);
 		std::shared_ptr<Texture> crateSpecular = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\container2_specular.png", TextureUsage::SPECULAR);
-		std::shared_ptr<Texture> crateEmissive = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\matrix.jpg", TextureUsage::EMISSIVE);
 		std::shared_ptr<Texture> crateNormal = AssetImporter::Instance().LoadTexture("..\\resources\\Models\\Crate\\crate_normal.png", TextureUsage::NORMAL);
 		crateMaterial->AddTexture(crateDiffuse);
 		crateMaterial->AddTexture(crateSpecular);
-		crateMaterial->AddTexture(crateEmissive);
 		crateMaterial->AddTexture(crateNormal);
 
 
@@ -59,17 +56,77 @@ namespace noctis
 		rustyMaterial->AddTexture(rustyRoughness);
 		rustyMaterial->AddTexture(rustyNormal);
 
+		//Add the materials to the pool
 		MaterialPool::Instance().AddMaterial(crateMaterialName, crateMaterial);
 		MaterialPool::Instance().AddMaterial(rustyMaterialName, rustyMaterial);
 		//________________________________________________________________________________________________
-
-		//_______________________________________SHADER_SETUP_____________________________________________
-		m_pPipelinePass.reset(new PipelinePass(m_pRenderDevice));
-		m_pFlatPipelinePass.reset(new PipelinePass(m_pRenderDevice));
-		m_pPBRPipelinePass.reset(new PipelinePass(m_pRenderDevice));
-		m_pSkyboxPipelinePass.reset(new PipelinePass(m_pRenderDevice));
 		
+		//Create the various render targets
+		auto& [width, height] = m_pRenderDevice->GetWindowWidthHeight();
+		m_hdrRTV = std::make_unique<Texture>(m_pRenderDevice, nullptr, "", width, height, 4, TextureUsage::RTV, Format::kRGBA16F);
+		m_filterRTV = std::make_unique<Texture>(m_pRenderDevice, nullptr, "", width, height, 4, TextureUsage::RTV, Format::kRGBA16F);
+		m_grayscaleRTV = std::make_unique<Texture>(m_pRenderDevice, nullptr, "", width, height, 4, TextureUsage::RTV, Format::kRGBA16F);
 
+		//Create a camera
+		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 50.0f, 0.0f), 0.2f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 10000.0f);
+
+		//Load and set up models
+		m_pCrate = std::make_shared<Model>(m_pRenderDevice, sg::Shape::CUBE, "Crate");
+		Transform crateTransform({ 10.0f, 70.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		m_pCrate->SetTransform(crateTransform);
+		m_pCrate->SetMaterial(crateMaterialName, "cube");
+
+		m_pModels.push_back(m_pCrate);
+
+		m_pSphereGenerated = std::make_shared<Model>(m_pRenderDevice, sg::Shape::SPHERE, "SphereGenerated");
+		Transform sphereGeneratedTransform({ 10.0f, 50.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		m_pSphereGenerated->SetTransform(sphereGeneratedTransform);
+		m_pModels.push_back(m_pSphereGenerated);
+
+		m_pSpherePBR = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
+		Transform spherePBRTransform({ 50.0f, 50.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		m_pSpherePBR->SetMaterial(kDefaultPBRMaterial, m_pSpherePBR->GetRootNode()->m_name);
+
+		m_pSpherePBR->SetTransform(spherePBRTransform);
+		m_pSpherePBR->SetName("PBRShpere");
+		m_pModels.push_back(m_pSpherePBR);
+
+		m_pSpherePhong = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
+		Transform spherePhongTransform({ 50.0f, 50.0f, 20.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		m_pSpherePhong->SetMaterial(kDefaultMaterial, "Sphere");
+		m_pSpherePhong->SetName("PhongShpere");
+		m_pSpherePhong->SetTransform(spherePhongTransform);
+
+		m_pModels.push_back(m_pSpherePhong);
+
+		m_pGLTFModel = AssetImporter::Instance().LoadModel("..\\resources\\Models\\fire\\scene.gltf");
+		Transform GLTFModelTransform({ 0.0f, 00.0f, 0.0f }, { kPI * 3.0f/2.0f, 0.0f, 0.0f}, { 10.0f, 10.0f, 10.0f });
+		m_pGLTFModel->SetTransform(GLTFModelTransform);
+
+		m_pModels.push_back(m_pGLTFModel);
+
+		//TODO:Give the model the default transform.
+		/*m_pSponza = AssetImporter::Instance().LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
+		Transform sponzaTransform({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		m_pSponza->SetTransform(sponzaTransform);
+		m_pModels.push_back(m_pSponza);*/
+		
+		//Load a skybox
+		std::array<std::string, 6> cubeMapPaths{"..\\resources\\Models\\skybox\\right.jpg",
+												"..\\resources\\Models\\skybox\\left.jpg",
+												"..\\resources\\Models\\skybox\\top.jpg",
+												"..\\resources\\Models\\skybox\\bottom.jpg",
+												"..\\resources\\Models\\skybox\\front.jpg",
+												"..\\resources\\Models\\skybox\\back.jpg" };
+
+		m_pSkybox = AssetImporter::Instance().LoadCubeMap(cubeMapPaths);
+
+		//Add some  lights to the scene
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kDirectional, { 0.1f, 0.1f, 0.1f, 1.0f }, math::Nvec3::Zero(), { -0.2f, -1.0f, -0.3f })));
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 50.0f, 30.0f }, math::Nvec3::Zero(), { 1.0f, 0.0022f, 0.00019f })));
+
+
+		//Create shaders
 		m_pVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingVertexShader.hlsl");
 		m_pPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingPixelShader.hlsl");
 		m_pFlatVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/FlatVertexShader.hlsl");
@@ -77,6 +134,14 @@ namespace noctis
 		m_pPBRPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/PBRPixelShader.hlsl");
 		m_pSkyboxVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/SkyboxVertexShader.hlsl");
 		m_pSkyboxPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/SkyboxPixelShader.hlsl");
+		m_pHdrVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/HdrVertexShader.hlsl");
+		m_pHdrPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/HdrPixelShader.hlsl");
+		m_pGoochPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/GoochPixelShader.hlsl");
+		m_pFullScreenFilterPShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/FullScreenNegativePixelShader.hlsl");
+		m_pFullScreenGrayscalePShader = std::make_shared<PixelShader>(m_pRenderDevice, L"../resources/Shaders/FullScreenGrayscalePixelShader.hlsl");
+		
+		//Set input layouts for the different shaders
+		m_pHdrVShader->SetInputLyout({});
 
 		m_pSkyboxVShader->SetInputLyout({
 			{VertexElement::kPosition, 0, VertexElement::kFloat3 }
@@ -94,93 +159,50 @@ namespace noctis
 			{VertexElement::kTexCoord, 0, VertexElement::kFloat2}
 			});
 
-		m_pPipelinePass->AddShaders(m_pVShader, m_pPShader);
-		m_pFlatPipelinePass->AddShaders(m_pFlatVShader, m_pFlatPShader);
-		m_pPBRPipelinePass->AddShaders(m_pVShader, m_pPBRPShader);
+		//Create pipeline passes 
+		m_pForwardPass.reset(new ForwardPipelinePass<Model>(m_pRenderDevice, m_hdrRTV, m_camera));
+		m_pForwardPass->AddIRenderables(m_pSpherePhong, m_pSphereGenerated, m_pCrate);
+		m_pForwardPass->AddShaders(m_pVShader, m_pPShader);
+
+		m_pForwardPBRPass.reset(new ForwardPipelinePass<Model>(m_pRenderDevice, m_hdrRTV, m_camera));
+		m_pForwardPBRPass->AddIRenderables(m_pSpherePBR, m_pGLTFModel);
+		m_pForwardPBRPass->AddShaders(m_pVShader, m_pPBRPShader);
+		
+		m_pForwardGoochPass.reset(new ForwardPipelinePass<Model>(m_pRenderDevice, m_hdrRTV, m_camera));
+		m_pForwardGoochPass->AddIRenderables(m_pSphereGenerated);
+		m_pForwardGoochPass->AddShaders(m_pVShader, m_pGoochPShader);
+
+		m_pToneMapHdrPass.reset(new PostProcessPipelinePass<Texture>(m_pRenderDevice, {}, m_camera));
+		m_pToneMapHdrPass->AddResources(m_hdrRTV);
+		m_pToneMapHdrPass->AddShaders(m_pHdrVShader, m_pHdrPShader);
+
+		m_pSkyboxPipelinePass.reset(new ForwardPipelinePass<CubeMap>(m_pRenderDevice, m_hdrRTV, m_camera));
+		m_pSkyboxPipelinePass->AddIRenderables(m_pSkybox);
 		m_pSkyboxPipelinePass->AddShaders(m_pSkyboxVShader, m_pSkyboxPShader);
 
-		m_camera = std::make_unique<Camera>(math::Nvec3(15.0f, 50.0f, 0.0f), 0.2f, 0.0f, 0.4 * 3.14f, m_pWindow->GetWidth(), m_pWindow->GetHeight(), 1.0f, 10000.0f);
+		m_pFlatPipelinePass.reset(new ForwardPipelinePass<NoctisLight>(m_pRenderDevice, m_hdrRTV, m_camera));
+		m_pFlatPipelinePass->AddIRenderables(m_pLights[0], m_pLights[1]);
+		m_pFlatPipelinePass->AddShaders(m_pFlatVShader, m_pFlatPShader);
 
-		//-------------------------------------------------------------------------------------------------------------------------------
-		m_pSpherePBR = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
-		Transform spherePBRTransform({ 50.0f, 50.0f, 10.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
-		m_pSpherePBR->SetMaterial(kDefaultPBRMaterial, m_pSpherePBR->GetRootNode()->m_name);
+		m_pFullScreenFilterPass.reset(new PostProcessPipelinePass<Texture>(m_pRenderDevice, {}, m_camera));
+		m_pFullScreenFilterPass->AddResources(m_filterRTV);
+		m_pFullScreenFilterPass->AddShaders(m_pHdrVShader, m_pFullScreenFilterPShader);
 
-		m_pSpherePBR->SetTransform(spherePBRTransform);
 
-		m_pModels.push_back(m_pSpherePBR);
-		m_pModels2.insert({ m_pSpherePBR->GetRootNode()->m_name, m_pSpherePBR });
+		m_pFullScreenGrayscalePass.reset(new PostProcessPipelinePass<Texture>(m_pRenderDevice, {}, m_camera));
+		m_pFullScreenGrayscalePass->AddResources(m_grayscaleRTV);
+		m_pFullScreenGrayscalePass->AddShaders(m_pHdrVShader, m_pFullScreenGrayscalePShader);
 
-		m_pSpherePhong = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
-		Transform spherePhongTransform({ 50.0f, 50.0f, 20.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
-		m_pSpherePhong->SetMaterial(kDefaultMaterial, "Sphere");
+		//------------------------------- Breaks abstraction layers ----------------------------------------------------
 
-		m_pSpherePhong->SetTransform(spherePhongTransform);
-
-		m_pModels.push_back(m_pSpherePhong);
-		//-------------------------------------------------------------------------------------------------------------------------------
+		rdr::DepthStencilState test(m_pRenderDevice, DepthStencilType<DepthType<DepthWriteAll>, StencilType<StencilOpWrite>>{});
 		
-		m_pSkull = AssetImporter::Instance().LoadModel("..\\resources\\Models\\suzanne.obj");
-
-		Transform skullTransform({ 0.0f, 50.0f, 10.0f }, { 1.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
-		m_pSkull->SetTransform(skullTransform);
-		
-		m_pModels.push_back(m_pSkull);
-
-		//--------------------------------------------------------------------------------------------------------------------------------------
-		//Create a model
-		m_pCrate = std::make_unique<Model>(m_pRenderDevice, sg::Shape::CUBE);
-
-		m_pCrate->SetMaterial(crateMaterialName, sg::kShapeNameCube);
-
-		Transform crateTransform({ 30.0f, 30.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-		m_pCrate->SetTransform(crateTransform);
-
-		m_pMaterialPreview = AssetImporter::Instance().LoadModel("..\\resources\\Models\\materialpreview-subdiv.obj");
-	
-		Transform sphereTransform({ 50.0f, 50.0f, -20.0f }, { 0.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f });
-
-		m_pMaterialPreview->SetTransform(sphereTransform);
 
 
-		m_pMaterialPreview->SetMaterial(rustyMaterialName, "Cylinder.001_Cylinder.002");
-
-		m_pModels.push_back(m_pMaterialPreview);
-
-		//----------------------------------------------------------------------------------------------------------
-
-		m_pGLTFModel = AssetImporter::Instance().LoadModel("..\\resources\\Models\\door\\scene.gltf");
-		Transform GLTFModelTransform({ 0.0f, 00.0f, 0.0f }, { kPI * 3.0f/2.0f, 0.0f, 0.0f}, { 10.0f, 10.0f, 10.0f });
-		m_pGLTFModel->SetTransform(GLTFModelTransform);
-
-		m_pModels.push_back(m_pGLTFModel);
-
-
-
-		//___________________________________SPONZA_____________________________________________________________
-
-		//TODO:Give the model the default transform.
-		/*m_pSponza = AssetImporter::Instance().LoadModel("..\\resources\\Models\\Sponza\\sponza.obj");
-		Transform sponzaTransform({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-		m_pSponza->SetTransform(sponzaTransform);*/
 		//______________________________________________________________________________________________________
+		m_pConstantPerFrame.reset(m_pRenderDevice->CreateBuffer<rdr::ConstantBuffer, CBFrameData>(true, &cbFrameData));
+		cbFrameData.ambient = 0.03f;
 		
-		//_______________________________________SKYBOX_________________________________________________________
-
-		std::array<std::string, 6> cubeMapPaths{"..\\resources\\Models\\skybox\\right.jpg",
-												"..\\resources\\Models\\skybox\\left.jpg",
-												"..\\resources\\Models\\skybox\\top.jpg",
-												"..\\resources\\Models\\skybox\\bottom.jpg",
-												"..\\resources\\Models\\skybox\\front.jpg",
-												"..\\resources\\Models\\skybox\\back.jpg" };
-
-		m_pSkybox = AssetImporter::Instance().LoadCubeMap(cubeMapPaths);
-		
-		//______________________________________________________________________________________________________
-
-		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kDirectional, { 0.5f, 0.5f, 0.5f, 1.0f }, math::Nvec3::Zero(), { -0.2f, -1.0f, -0.3f })));
-		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 1.0f, 0.6f, 0.0f, 1.0f }, { 0.0f, 50.0f, 30.0f }, math::Nvec3::Zero(), { 1.0f, 0.0022f, 0.00019f } )));
-
 		return true;
 	}
 
@@ -190,27 +212,34 @@ namespace noctis
 
 	void ExampleDx11App::Update(float dt)
 	{
+		//Update the camera position
 		cbFrameData.eyePos = m_camera->GetPosition();
 
+		if (m_enableGammaCorrection)
+			cbFrameData.gammaCorrection = gamma;
+		else
+			cbFrameData.gammaCorrection = 1.0f;
 
-		cbFrameData.dirLight.ambient = m_pLights[0]->GetColor();
+		if (m_enabledNormalMapping)
+			cbFrameData.enabledNormalMapping = true;
+		else
+			cbFrameData.enabledNormalMapping = false;
+
+		//Update Lights
 		cbFrameData.dirLight.diffuse = m_pLights[0]->GetColor();
-		cbFrameData.dirLight.specular = m_pLights[0]->GetColor();
 		cbFrameData.dirLight.direction = m_pLights[0]->GetTransform().rotation;
+		cbFrameData.dirLight.enabled = m_pLights[0]->m_enabled;
 
-
+		std::for_each(std::begin(cbFrameData.pointLights), std::end(cbFrameData.pointLights), [](auto& light) { light.enabled = false; });
 		for (int i = 1; i < m_pLights.size(); ++i)
 		{
-			cbFrameData.pointLights[i].attenuation = m_pLights[i]->GetAttenuation();
-			cbFrameData.pointLights[i].diffuse = m_pLights[i]->GetColor();
-			cbFrameData.pointLights[i].enabled = m_pLights[i]->m_enabled;
-			cbFrameData.pointLights[i].specular = m_pLights[i]->GetColor();
-			cbFrameData.pointLights[i].position = m_pLights[i]->GetTransform().position;
+			cbFrameData.pointLights[i -1].attenuation = m_pLights[i]->GetAttenuation();
+			cbFrameData.pointLights[i -1].diffuse = m_pLights[i]->GetColor();
+			cbFrameData.pointLights[i -1].enabled = m_pLights[i]->m_enabled;
+			cbFrameData.pointLights[i -1].position = m_pLights[i]->GetTransform().position;
 		}
 		m_pConstantPerFrame->Update(m_pRenderDevice, cbFrameData);
 		m_pConstantPerFrame->Bind(m_pRenderDevice, 1);
-		//-----------------------------------------------------
-
 	}
 
 
@@ -219,30 +248,38 @@ namespace noctis
 
 	void ExampleDx11App::Render(float dt)
 	{
-		m_pRenderDevice->Clear(kRender | kDepth);
-
-		
-		//m_pPipelinePass->Render(m_pRenderDevice, *m_pCrate, *m_camera);
-		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSkull, *m_camera);
-		//m_pPipelinePass->Render(m_pRenderDevice, *m_pSponza, *m_camera);
-		m_pPipelinePass->Render(m_pRenderDevice, *m_pSpherePhong, *m_camera);
-		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pSpherePBR, *m_camera);
-		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pMaterialPreview, *m_camera);
-		m_pPBRPipelinePass->Render(m_pRenderDevice, *m_pGLTFModel, *m_camera);
-		m_pSkyboxPipelinePass->Render(m_pRenderDevice, *m_pSkybox, *m_camera);
-
-
-
+		//TODO: This clears the default rtv but not the hdr render target view which is bound in PipelinePass and 
+		m_pRenderDevice->Clear(kRender | kDepth | kStencil);
+	
+		m_pForwardPBRPass->Render(m_pRenderDevice);
+		m_pSkyboxPipelinePass->Render(m_pRenderDevice);
 #if _DEBUG
-		for(auto& light : m_pLights)
-			m_pFlatPipelinePass->Render(m_pRenderDevice, *light, *m_camera);
+		m_pFlatPipelinePass->Render(m_pRenderDevice);
 #endif //_DEBUG
+
+		m_pForwardPass->Render(m_pRenderDevice);
+		m_pForwardGoochPass->Render(m_pRenderDevice);
+
+		//Reads the hdrRTV and draws to filterRTV, grayscaleRTV or to the screen
+		if (m_enableNegativeFilter)
+			m_pToneMapHdrPass->Render(m_pRenderDevice, m_filterRTV);
+		else if (m_enableGrayscale)
+			m_pToneMapHdrPass->Render(m_pRenderDevice, m_grayscaleRTV);
+		else
+			m_pToneMapHdrPass->Render(m_pRenderDevice);
+
+		//Reads the filterRTV and draws to the grayscaleRTV or to the screen
+		if (m_enableNegativeFilter && m_enableGrayscale)
+			m_pFullScreenFilterPass->Render(m_pRenderDevice, m_grayscaleRTV);
+		else if (m_enableNegativeFilter)
+			m_pFullScreenFilterPass->Render(m_pRenderDevice);
+
+		if (m_enableGrayscale)
+			m_pFullScreenGrayscalePass->Render(m_pRenderDevice);
+
 #if NOCTIS_USE_IMGUI
 		RenderToImGui();
 #endif //NOCTIC_USE_IMGUI
-		//_______________________________________________________________________________________________
-		m_pRenderDevice->Present();
-
 	}
 
 
@@ -255,8 +292,7 @@ namespace noctis
 	//-----------------------------------------------------------------------------
 	void ExampleDx11App::RenderImGuiFrame()
 	{
-		ImGui::Begin("Menu");
-
+		//Lambda to create a Help marker
 		auto HelpMarker = [](const char* desc)
 		{
 			ImGui::TextDisabled("(?)");
@@ -270,19 +306,57 @@ namespace noctis
 			}
 		};
 
+		ImGui::Begin("Menu");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		if (ImGui::CollapsingHeader("Help"))
+		{
+			ImGui::Text("USER GUIDE:");
+			ImGui::BulletText("WASD or Arrows to move around the scene.");
+			ImGui::BulletText("Mouse to look around the scene.");
+			ImGui::BulletText("Block the mouse with CTRL + ALT + Z.");
+		}
+
+		if (ImGui::CollapsingHeader("Configuration"))
+		{
+			ImGui::DragFloat("Gamma", &gamma, 0.1f, 1.0f, 10.0f);
+			ImGui::Checkbox("Gamma Correction", &m_enableGammaCorrection);
+			ImGui::SameLine();
+			HelpMarker("If the texture is coloured it contains both Metallic and Roughness.");
+			ImGui::Checkbox("Negative Filter", &m_enableNegativeFilter);
+			ImGui::Checkbox("Grayscale Filter", &m_enableGrayscale);
+			ImGui::Checkbox("Blur Filter", &m_enableBlurFilter);
+			ImGui::Checkbox("Normal Mapping", &m_enabledNormalMapping);
+			if (ImGui::Button("Add Light"))
+			{
+				AddLight();
+			}
+			ImGui::DragFloat("Ambient", &cbFrameData.ambient, 0.01f, 0.0f, 1.0f);
+		}
+
 		//A recursive lambda to render the Node based representation of a mesh.
 		auto renderTree = [](const auto renderTree, Node* node, uint8_t& index, uint8_t& selectedIndex, Node** outSelected) -> void
 		{
 			uint8_t currentIndex = ++index;
-			//Make sure that only nodes with at least one mesh are added to the hierarchy. 
-			if (node->m_meshes.size() && ImGui::TreeNodeEx(node->m_name.c_str(), selectedIndex != -1 && currentIndex == selectedIndex ? ImGuiTreeNodeFlags_Selected : 0))
+			//Don't add nodes with only one child
+			if (node->m_pNodes.size() > 0)
 			{
+				bool node_open = ImGui::TreeNodeEx(node->m_name.c_str(), selectedIndex != -1 && currentIndex == selectedIndex ? ImGuiTreeNodeFlags_Selected : 0);
 				selectedIndex = ImGui::IsItemClicked() ? currentIndex : selectedIndex;
-				for (const auto& children : node->m_pNodes)
+				
+				if (node_open)
 				{
-					renderTree(renderTree, children.get(), currentIndex, selectedIndex, outSelected);
+					for (const auto& children : node->m_pNodes)
+					{
+						renderTree(renderTree, children.get(), index, selectedIndex, outSelected);
+					}
+					ImGui::TreePop();
 				}
-				ImGui::TreePop();
+			}
+			else if (node->m_meshes.size())
+			{
+				ImGui::TreeNodeEx(node->m_name.c_str(), (selectedIndex != -1 && currentIndex == selectedIndex ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+				selectedIndex = ImGui::IsItemClicked() ? currentIndex : selectedIndex;
 			}
 			//Otherwise do not add the current node, however try to render it's children.
 			else
@@ -303,11 +377,8 @@ namespace noctis
 		{
 			uint8_t currentIndex = ++index;
 			auto node = light->GetModel(m_pRenderDevice).GetRootNode();
-			if (node->m_meshes.size() && ImGui::TreeNodeEx(node->m_name.c_str(), selectedIndex != -1 && currentIndex == selectedIndex ? ImGuiTreeNodeFlags_Selected : 0))
-			{
-				selectedIndex = ImGui::IsItemClicked() ? currentIndex : selectedIndex;
-				ImGui::TreePop();
-			}
+			ImGui::TreeNodeEx(node->m_name.c_str(), (selectedIndex != -1 && currentIndex == selectedIndex ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			selectedIndex = ImGui::IsItemClicked() ? currentIndex : selectedIndex;
 			if (currentIndex == selectedIndex)
 				*outSelected = light;
 		};
@@ -345,6 +416,11 @@ namespace noctis
 			//To keep track of metallic-roughness textures.
 			bool hasMetallic = true;
 			auto materialType = material->GetType();
+			if (materialType == Material::MaterialType::Legacy)
+			{
+				PhongMaterial* ptr = reinterpret_cast<PhongMaterial*>(material.get());
+				ImGui::Checkbox("Use Blinn-Phong", (bool*)&ptr->GetData().blinn);
+			}
 			for (unsigned int i = 0; i < TextureUsage::COUNT; ++i)
 			{
 				auto& pTex = material->GetTexture(static_cast<TextureUsage>(i));
@@ -391,6 +467,8 @@ namespace noctis
 						int misc_flags = ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 						PhongMaterial* ptr = reinterpret_cast<PhongMaterial*>(material.get());
 						ImGui::ColorEdit3(TextureUsageToString(materialType, static_cast<TextureUsage>(i)), (float*)&ptr->GetData().specular, misc_flags);
+						ImGui::DragFloat("Specular Power", (float*)&ptr->GetData().specular.w, 1.0f, 1.0f, 1024.0f);
+
 					}
 				}
 				if (renderText)
@@ -431,33 +509,30 @@ namespace noctis
 			ImGui::Separator();
 			auto& GLTFModelTransform = selectedLight->GetTransform();
 			ImGui::Text("%s", "Light");
-			ImGui::SliderFloat3("Position", &GLTFModelTransform.position.x, -1000.0f, 1000.0f);
-			ImGui::SliderFloat3("Rotation", &GLTFModelTransform.rotation.x, 0.0f, 7.0f);
-			ImGui::SliderFloat3("Scale", &GLTFModelTransform.scale.x, 0.2f, 10.0f);
+			ImGui::DragFloat3("Position", &GLTFModelTransform.position.x, 0.1f);
+			ImGui::DragFloat3("Rotation", &GLTFModelTransform.rotation.x, 0.01f);
+			ImGui::DragFloat3("Scale", &GLTFModelTransform.scale.x, 0.01f);
 			ImGui::Checkbox("Enable", (bool*)&selectedLight->m_enabled);
 
 			int misc_flags = ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			ImGui::ColorEdit3("Color", (float*)&selectedLight->GetColor(), misc_flags);
 			ImGui::SameLine(); HelpMarker("Click on the colored square to open a color picker.\nCTRL+click on individual component to input value.\n");
-			ImGui::SliderFloat3("Attenuation", &selectedLight->GetAttenuation().x, 0.0f, 1.0f);
+			ImGui::DragFloat3("Attenuation", &selectedLight->GetAttenuation().x, 0.01f, 0.01f, 1.0f);
 		}
 		else if (GLTFModel)
 		{
 			ImGui::Separator();
 			auto& GLTFModelTransform = GLTFModel->m_transform;
 			ImGui::Text("%s", GLTFModel->m_name.c_str());
-			ImGui::SliderFloat3("Position", &GLTFModelTransform.position.x, -1000.0f, 1000.0f);
-			ImGui::SliderFloat3("Rotation", &GLTFModelTransform.rotation.x, 0.0f, 7.0f);
-			ImGui::SliderFloat3("Scale", &GLTFModelTransform.scale.x, 0.2f, 10.0f);
-			//ImGui::DragFloat3("Scale", &GLTFModelTransform.scale.x, 0.1f);
+			ImGui::DragFloat3("Position", &GLTFModelTransform.position.x, 0.1f);
+			ImGui::DragFloat3("Rotation", &GLTFModelTransform.rotation.x, 0.1f);
+			ImGui::DragFloat3("Scale", &GLTFModelTransform.scale.x, 0.1f);
 			if (GLTFModel->m_meshes.size())
 			{
 				ImGui::Separator();
 				ImGuiIO& io = ImGui::GetIO();
 				auto material = GLTFModel->m_pOwner->GetMaterial(GLTFModel->m_pOwner->GetMeshes()[GLTFModel->m_meshes[0]]->GetName());
 				ImGui::Text("%s", material->GetName().c_str());
-
-				
 				
 				renderMaterial(material);
 			}
@@ -522,5 +597,12 @@ namespace noctis
 			m_camera->Rotate({ 0.0f, 1.0f });
 
 
+	}
+
+
+	void ExampleDx11App::AddLight()
+	{
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 50.0f, 0.0f }, math::Nvec3::Zero(), { 1.0f, 0.0022f, 0.00019f })));
+		m_pFlatPipelinePass->AddIRenderables(m_pLights.back());
 	}
 }

@@ -19,6 +19,7 @@ namespace noctis
 	{
 		m_pClock = std::make_unique<Clock>();
 		m_pWindow = std::make_unique<Window>(hInstance);
+		Init();
 	}
 
 
@@ -65,6 +66,10 @@ namespace noctis
 			const float dt = m_pClock->DeltaTime();
 			Update(dt);
 			Render(dt);
+#if NOCTIS_USE_IMGUI
+			RenderToImGui();
+#endif //NOCTIC_USE_IMGUI
+			m_pRenderDevice->Present();
 			m_pClock->Tick();
 		}
 	}
