@@ -41,7 +41,7 @@ private:
 	std::string					m_title;
 	UINT						m_width;
 	UINT						m_height;
-	inline static bool			m_bMouseLocked {true};
+	inline static bool			m_bMouseLocked {false};
 
 
 	std::unique_ptr<DirectX::Keyboard>			m_pKeyboard;
