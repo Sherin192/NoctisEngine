@@ -78,6 +78,11 @@ namespace noctis::rdr
 		void SetPrimitiveTopology(Topology);
 
 		void SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler);
+		
+		void SetDepthStencile(DepthStencilState& state)
+		{
+			m_pImmediateContext->OMSetDepthStencilState(state.GetDepthStencilState().Get(), state.GetStencilRef());		//Second parameter is for stencile which is not used at the moment.
+		}
 
 		bool Init(HWND hwnd, unsigned width, unsigned height);
 

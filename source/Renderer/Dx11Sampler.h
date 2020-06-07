@@ -120,6 +120,105 @@ namespace noctis::rdr
 	};
 
 //====================================================================================
+
+
+	//------------------------------------------------------------------------------------
+//		NoctisToAPISampler: Helper convertin function. 
+//------------------------------------------------------------------------------------
+	template <typename DepthType, typename StencilType>
+	constexpr auto NoctisToAPIDepthStencil(DepthStencilType<DepthType, StencilType> type)
+	{
+		//Make a default depth stencil description
+		D3D11_DEPTH_STENCIL_DESC dpDesc = CD3D11_DEPTH_STENCIL_DESC{};
+		if (std::is_base_of_v<DepthDisable, DepthType>)
+		{
+			dpDesc.DepthEnable = false;
+		}
+		else if (std::is_base_of_v<DepthWriteAll, DepthType>)
+		{
+			dpDesc.DepthEnable = true;
+			dpDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+			dpDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		}
+		else
+		{
+			dpDesc.DepthEnable = true;
+			dpDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+			dpDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		}
+
+		if (std::is_base_of_v<StencilDisable, StencilType>)
+		{
+			dpDesc.StencilEnable = false;
+		}
+		else
+		{
+			dpDesc.StencilEnable = true;
+			dpDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+			dpDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+			if (std::is_base_of_v<StencilFailOpKeep, StencilType>)				dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+			else if (std::is_base_of_v<StencilFailOpZero, StencilType>)			dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_ZERO;
+			else if (std::is_base_of_v<StencilFailOpReplace, StencilType>)		dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_REPLACE;
+			else if (std::is_base_of_v<StencilFailOpIncrSat, StencilType>)		dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_INCR_SAT;
+			else if (std::is_base_of_v<StencilFailOpDecSat, StencilType>)		dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_DECR_SAT;
+			else if (std::is_base_of_v<StencilFailOpInvert, StencilType>)		dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_INVERT;
+			else if (std::is_base_of_v<StencilFailOpIncr, StencilType>)			dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_INCR;
+			else if (std::is_base_of_v<StencilFailOpDecr, StencilType>)			dpDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_DECR;
+
+			if (std::is_base_of_v<StencilDepthFailOpKeep, StencilType>)			dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+			else if (std::is_base_of_v<StencilDepthFailOpZero, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_ZERO;
+			else if (std::is_base_of_v<StencilDepthFailOpReplace, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_REPLACE;
+			else if (std::is_base_of_v<StencilDepthFailOpIncrSat, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR_SAT;
+			else if (std::is_base_of_v<StencilDepthFailOpDecSat, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR_SAT;
+			else if (std::is_base_of_v<StencilDepthFailOpInvert, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INVERT;
+			else if (std::is_base_of_v<StencilDepthFailOpIncr, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+			else if (std::is_base_of_v<StencilDepthFailOpDecr, StencilType>)	dpDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+
+			if (std::is_base_of_v<StencilPassOpKeep, StencilType>)				dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+			else if (std::is_base_of_v<StencilPassOpZero, StencilType>)			dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_ZERO;
+			else if (std::is_base_of_v<StencilPassOpReplace, StencilType>)		dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+			else if (std::is_base_of_v<StencilPassOpIncrSat, StencilType>)		dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR_SAT;
+			else if (std::is_base_of_v<StencilPassOpDecSat, StencilType>)		dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_DECR_SAT;
+			else if (std::is_base_of_v<StencilPassOpInvert, StencilType>)		dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INVERT;
+			else if (std::is_base_of_v<StencilPassOpIncr, StencilType>)			dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_INCR;
+			else if (std::is_base_of_v<StencilPassOpDecr, StencilType>)			dpDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_DECR;
+
+			if (std::is_base_of_v<CompareNever, StencilType>)					dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NEVER;
+			else if (std::is_base_of_v<CompareLess, StencilType>)				dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
+			else if (std::is_base_of_v<CompareEqual, StencilType>)				dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+			else if (std::is_base_of_v<CompareLessEqual, StencilType>)			dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS_EQUAL;
+			else if (std::is_base_of_v<CompareGreater, StencilType>)			dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_GREATER;
+			else if (std::is_base_of_v<CompareNotEqual, StencilType>)			dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
+			else if (std::is_base_of_v<CompareGreaterEqual, StencilType>)		dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_GREATER_EQUAL;
+			else if (std::is_base_of_v<CompareAlways, StencilType>)				dpDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+			dpDesc.BackFace = dpDesc.FrontFace;
+		}
+
+		return dpDesc;
+	}
+
+	template <typename Derived>
+	class Dx11DeptStencilState
+	{
+	protected:
+		//C.35: A base class destructor should be either public and virtual, or protected and nonvirtual
+		~Dx11DeptStencilState() = default;
+	public:
+		Dx11DeptStencilState(std::shared_ptr<RenderDevice>& renderDevice, D3D11_DEPTH_STENCIL_DESC desc, uint8_t stencilRef) : m_desc(desc), m_stencilRef(stencilRef)
+		{
+			//TODO: Result check should be done only in Debug.
+			renderDevice->GetDevice()->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf());
+			//auto hResult = renderDevice->GetDevice()->CreateDepthStencilState(&desc, m_pDepthStencilState.GetAddressOf());
+			//if (FAILED(hResult)) Log(LogLevel::Error, "Failed to create a DepthStencil state");
+		}
+
+		auto& GetDepthStencilState() { return m_pDepthStencilState; }
+		auto GetStencilRef() { return m_stencilRef; }
+	private:
+		D3D11_DEPTH_STENCIL_DESC m_desc;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState>		m_pDepthStencilState;
+		uint8_t m_stencilRef;
+	};
 }
 
 #endif //DX11_SAMPLER_H

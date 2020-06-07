@@ -69,7 +69,7 @@ namespace noctis::rdr
 		depthStenciBufferDesc.Height = height;
 		depthStenciBufferDesc.MipLevels = 1u;
 		depthStenciBufferDesc.ArraySize = 1u;
-		depthStenciBufferDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		depthStenciBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // DXGI_FORMAT_D32_FLOAT;
 		depthStenciBufferDesc.SampleDesc.Count = 1u;
 		depthStenciBufferDesc.SampleDesc.Quality = 0u;
 		depthStenciBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -80,8 +80,7 @@ namespace noctis::rdr
 		depthStencilDesc.DepthEnable = true;
 		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-		depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DXGI_FORMAT_D32_FLOAT;
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0u;
 
