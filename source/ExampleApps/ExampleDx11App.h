@@ -62,7 +62,8 @@ public:
 
 		std::shared_ptr<rdr::CubeMap>			m_pSkybox;
 		std::shared_ptr<Camera>					m_camera;
-
+		float									camVelocity = 50.0f;
+		float									camRotationSpeed = 1.0f;
 		noctis::rdr::CBFrameData				cbFrameData;
 
 		
@@ -96,11 +97,12 @@ public:
 		std::shared_ptr<rdr::Texture>	m_filterRTV;
 		std::shared_ptr<rdr::Texture>	m_grayscaleRTV;
 
-		bool m_enableGammaCorrection = false;
+		bool m_enableGammaCorrection = true;
 		bool m_enableNegativeFilter = false;
 		bool m_enableGrayscale = false;
 		bool m_enableBlurFilter = false;
-		bool m_enabledNormalMapping = false;
+		bool m_enabledNormalMapping = true;
+		bool m_showLights = true;
 		float gamma = 2.2f;
 		void AddLight();
 	};
