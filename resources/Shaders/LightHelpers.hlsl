@@ -9,6 +9,7 @@
 #define TEX_SLOT_OPACITY 	4
 #define TEX_SLOT_EMISSIVE 	5
 
+#define MAX_POINT_LIGHTS 50
 
 
 cbuffer ConstantBufferPerObject : register(b0)
@@ -89,8 +90,6 @@ struct SpotLight
 	//----------------------------------
 };												//96 bytes total
 
-
-#define MAX_POINT_LIGHTS 8
 
 cbuffer ConstantBufferPerFrame : register(b1)
 {

@@ -46,7 +46,7 @@ namespace noctis::rdr
 	struct CBFrameData
 	{
 		DirectionalLight dirLight;
-		PointLight pointLights[8];
+		PointLight pointLights[50];
 		math::Nvec3 eyePos;
 		float ambient;
 		float gammaCorrection;
