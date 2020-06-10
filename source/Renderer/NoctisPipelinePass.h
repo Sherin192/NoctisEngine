@@ -81,6 +81,19 @@ namespace noctis::rdr{
 				renderable->Render(renderDevice, *m_pCamera);
 			//model.Render(renderDevice, camera);
 		}
+
+		void Render(std::shared_ptr<RenderDevice>& renderDevice, std::shared_ptr < IRenderable<T>> model)
+		{
+			renderDevice->SetRenderTarget(m_pRenderTarget.get());
+
+			renderDevice->SetPrimitiveTopology(kTriangleList);
+
+			m_pVertexShader->BindInputLayout(renderDevice);
+			BindSamplers(renderDevice);
+			BindShaders(renderDevice);
+
+			model->Render(renderDevice, *m_pCamera);
+		}
 	private:
 		std::shared_ptr<Camera>											m_pCamera;
 		std::shared_ptr<VertexShader>									m_pVertexShader;
