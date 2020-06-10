@@ -3,6 +3,8 @@
 #include "Window.h"
 #include "Clock.h"
 
+#define NOCTIS_ALWAYS_RENDER_LIGHTS 1
+
 namespace noctis::rdr
 {
 class RenderDevice;

@@ -292,8 +292,9 @@ std::shared_ptr<rdr::Mesh> AssetImporterImpl::ProcessMesh(const aiScene* scene, 
 	//TODO: Move this functionality to an AssetImporter and store the textures in a TextureManager and let the mesh store pointers into the global array of textures.
 
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+#if _DEBUG
 	ShowMaterialInformations(material);
-
+#endif //_DEBUG
 	std::shared_ptr<rdr::Texture> diffuseMaps = LoadMaterial(material, aiTextureType_DIFFUSE);
 	std::shared_ptr<rdr::Texture> specularMaps = LoadMaterial(material, aiTextureType_SPECULAR);
 	std::shared_ptr<rdr::Texture> normalMaps = LoadMaterial(material, aiTextureType_NORMALS);

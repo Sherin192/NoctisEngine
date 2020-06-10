@@ -1,6 +1,8 @@
 #ifndef _TRANSFORM_H
 #define _TRANSFORM_H
 
+#include "Math/NoctisMath.h"
+
 namespace noctis
 {
 struct Transform

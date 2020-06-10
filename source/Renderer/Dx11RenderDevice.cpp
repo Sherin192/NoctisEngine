@@ -137,8 +137,9 @@ namespace noctis::rdr
 		// used to create the device.  If we tried to use a different IDXGIFactory instance
 		// (by calling CreateDXGIFactory), we get an error: "IDXGIFactory::CreateSwapChain: 
 		// This function is being called with a device from a different IDXGIFactory."
-
+#if _DEBUG
 		m_pDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(m_pDebugDevice.GetAddressOf()));
+#endif _DEBUG
 
 		ComPtr<IDXGIDevice1> dxgiDevice;
 		m_pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)dxgiDevice.GetAddressOf());

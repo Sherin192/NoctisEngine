@@ -1,7 +1,7 @@
 #include "Core_pch.h"
-#if _DEBUG
+//#if _DEBUG || NOCTIS_ALWAYS_RENDER_LIGHTS
 #include "Model.h" //TODO: Debug Only 
-#endif //_DEBUG
+//#endif //_DEBUG || NOCTIS_ALWAYS_RENDER_LIGHTS
 #include "Light.h"
 
 namespace noctis::rdr
