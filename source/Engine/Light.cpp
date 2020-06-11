@@ -12,7 +12,7 @@ NoctisLight::NoctisLight(std::shared_ptr<RenderDevice>& renderDevice, Type type,
 	m_color(color), 
 	m_attenuation(attenuation), 
 	m_lightType(type), 
-	m_model(new Model(renderDevice, sg::Shape::CUBE, "Light"))
+	m_model(new Model(renderDevice, sg::Shape::CUBE, type == Type::kPoint ? "Point Light" : "Directional Light"))
 {
 }
 

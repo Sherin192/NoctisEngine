@@ -80,6 +80,7 @@ public:
 	Transform& GetTransform() noexcept { return m_transform; }
 	auto& GetColor() { return m_color; }
 	auto& GetAttenuation() { return m_attenuation; }
+	auto GetType() { return m_lightType; }
 	bool m_enabled;
 private:
 	Transform m_transform;
