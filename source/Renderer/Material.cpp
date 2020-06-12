@@ -1,6 +1,7 @@
 #include "Core_pch.h"
 #include "Material.h"
 #include "NoctisTexture.h"
+
 namespace noctis::rdr
 {
 
@@ -21,20 +22,30 @@ PBRMaterial::PBRMaterialData PBRMaterial::defaultMaterial = PBRMaterialData{
 
 
 
-
+//------------------------------------------------------------------------------------
+//		AddTexture: Add thexture to the Phong material. 
+//------------------------------------------------------------------------------------
 void PhongMaterial::AddTexture(std::shared_ptr<Texture> texture)
 {
+	//TODO:This should be moved to the base class for both materials as the code is identical.
 	if (!texture)
 		return;
 	m_textures[texture->GetType()] = texture;
 	SetTextureBitField(texture->GetType());
 }
 
+//====================================================================================
 
 
 
+
+
+//------------------------------------------------------------------------------------
+//		Bind: Bind the Phong material. 
+//------------------------------------------------------------------------------------
 void PhongMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice)
 {
+	//TODO:This should be moved to the base class for both materials as the code is identical.
 	for (auto& texture : m_textures)
 	{
 		if (texture)
@@ -44,13 +55,19 @@ void PhongMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice)
 			//renderDevice->GetDeviceContext()->PSSetShaderResources(texture->GetType() == HEIGHT ? NORMAL : texture->GetType(), 1, texture->GetSRV().GetAddressOf());
 		}
 	}
-
+	//TODO: Remove the magic number for the slot at which the constant buffer is bound.
 	m_cbuffer.Bind(renderDevice, 2);
 }
 
+//====================================================================================
 
 
 
+
+
+//------------------------------------------------------------------------------------
+//		AddTexture: Add thexture to the PBRMaterial. 
+//------------------------------------------------------------------------------------
 void PBRMaterial::AddTexture(std::shared_ptr<Texture> texture)
 {
 	if (!texture)
@@ -59,8 +76,15 @@ void PBRMaterial::AddTexture(std::shared_ptr<Texture> texture)
 	SetTextureBitField(texture->GetType());
 }
 
+//====================================================================================
 
 
+
+
+
+//------------------------------------------------------------------------------------
+//		Bind: Bind the PBR material.
+//------------------------------------------------------------------------------------
 void PBRMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice) 
 { 
 	for (auto& texture : m_textures)
@@ -74,4 +98,6 @@ void PBRMaterial::Bind(std::shared_ptr<RenderDevice> renderDevice)
 	m_cbuffer.Bind(renderDevice, 2); 
 }
 
-}
+//====================================================================================
+
+} //noctis::rdr

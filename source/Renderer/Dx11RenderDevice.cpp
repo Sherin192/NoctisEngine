@@ -3,34 +3,56 @@
 
 namespace noctis::rdr
 {
+
+
+
+//------------------------------------------------------------------------------------
+//		Present: Present to the screan. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::Present()
 	{
 		m_pSwapChain->Present(1, 0);
 		m_pImmediateContext->OMSetRenderTargets(1, m_pRTView.GetAddressOf(), m_pDepthStencilView.Get());
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		SetRasterizerState: Set the rasterizer state. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::SetRasterizerState(RasterizerType type)
 	{
 		m_pImmediateContext->RSSetState(m_rasterizerStates[type].Get());
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		ClearRenderTarget: Clear the render target. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::ClearRenderTarget()
 	{
+		//TODO::this might be extended to take a color used to clear.
 		m_pImmediateContext->ClearRenderTargetView(m_pRTView.Get(), DirectX::Colors::AliceBlue);
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		ClearDepthStencil: Clear the targets required with the values passed.
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::ClearDepthStencil(uint8_t targets, float depthColor, float stencilColor)
 	{
 		static_assert(D3D11_CLEAR_DEPTH == ClearTargetType::kDepth && D3D11_CLEAR_STENCIL == ClearTargetType::kStencil);
@@ -39,28 +61,47 @@ namespace noctis::rdr
 		m_pImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), targets & flags, depthColor, stencilColor);
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		SetPrimitiveTopology: Set primitive topology. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::SetPrimitiveTopology(Topology topology)
 	{
+		//TODO: Fix this to use the topology passed.
 		m_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
+//====================================================================================
 
 
+
+
+
+//------------------------------------------------------------------------------------
+//		SetSampler: Set the sampler at the required slot.
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::SetSampler(uint32_t slot, uint32_t num, std::shared_ptr<Sampler>& sampler)
 	{
 		m_pImmediateContext->PSSetSamplers(slot, num, sampler->GetDx11Sampler().GetAddressOf());
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		InitDepthStencilDescs: Initialize the depth stencile structures.
+//------------------------------------------------------------------------------------
 	auto Dx11RenderDevice::InitDepthStencilDescs(unsigned width, unsigned height)
 	{
+		//TODO: This might be removed in the future when RenderState will be used to set the state of the pipeline.
 		D3D11_DEPTH_STENCIL_DESC		depthStencilDesc{};
 		D3D11_TEXTURE2D_DESC			depthStenciBufferDesc{};
 		D3D11_DEPTH_STENCIL_VIEW_DESC	depthStencilViewDesc{};
@@ -87,10 +128,15 @@ namespace noctis::rdr
 		return std::make_tuple(depthStencilDesc, depthStenciBufferDesc, depthStencilViewDesc);
 	}
 
+//====================================================================================
 
 
 
 
+
+//------------------------------------------------------------------------------------
+//		Init: Initializes the DirectX 11 device and context.
+//------------------------------------------------------------------------------------
 	bool Dx11RenderDevice::Init(HWND hwnd, unsigned width, unsigned height)
 	{
 		using Microsoft::WRL::ComPtr;
@@ -207,13 +253,18 @@ namespace noctis::rdr
 		return true;
 	}
 
+//====================================================================================
 
 
 
 
 
+//------------------------------------------------------------------------------------
+//		CreateRasterizationState: Creates common rasterizer states. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::CreateRasterizationState()
 	{
+		//TODO: This should be move out of the RenderDevice.
 		D3D11_RASTERIZER_DESC rasterizerDesc;
 		ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
@@ -233,9 +284,15 @@ namespace noctis::rdr
 
 	}
 
+//====================================================================================
 
 
 
+
+
+//------------------------------------------------------------------------------------
+//		SetRenderTarget: Set the render target, if null it uses the back buffer. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::SetRenderTarget(Dx11Texture* rtv)
 	{
 		if (rtv)
@@ -243,9 +300,21 @@ namespace noctis::rdr
 		else m_pRTView = m_pBackBufferRTView;
 		m_pImmediateContext->OMSetRenderTargets(1, rtv? m_pRTView.GetAddressOf() : m_pBackBufferRTView.GetAddressOf(), m_pDepthStencilView.Get());
 	}
+
+//====================================================================================
+
+
+
+
+
+//------------------------------------------------------------------------------------
+//		ResetRenderTarget: Resets the render target to the default state. 
+//------------------------------------------------------------------------------------
 	void Dx11RenderDevice::ResetRenderTarget()
 	{
 		m_pImmediateContext->OMSetRenderTargets(1, m_pBackBufferRTView.GetAddressOf(), m_pDepthStencilView.Get());
 	}
+
+//====================================================================================
 
 } //noctis::rdr

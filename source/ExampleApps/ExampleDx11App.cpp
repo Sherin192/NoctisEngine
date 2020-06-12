@@ -72,19 +72,19 @@ namespace noctis
 
 		//Load and set up models
 		m_pCrate = std::make_shared<Model>(m_pRenderDevice, sg::Shape::CUBE, "Crate");
-		Transform crateTransform({ 0.0f, 0.0f, -20.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		Transform crateTransform({ 10.0f, 10.50f, -50.60f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
 		m_pCrate->SetTransform(crateTransform);
 		m_pCrate->SetMaterial(crateMaterialName, "cube");
 
 		m_pModels.push_back(m_pCrate);
 
 		m_pSphereGenerated = std::make_shared<Model>(m_pRenderDevice, sg::Shape::SPHERE, "SphereGenerated");
-		Transform sphereGeneratedTransform({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		Transform sphereGeneratedTransform({ -18.60f, 7.0f, -35.3f }, { 0.0f, 0.0f, 0.0f }, { 2.0f, 2.0f, 2.0f });
 		m_pSphereGenerated->SetTransform(sphereGeneratedTransform);
 		m_pModels.push_back(m_pSphereGenerated);
 
 		m_pSpherePBR = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
-		Transform spherePBRTransform({ 0.0f, 0.0f, 20.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		Transform spherePBRTransform({ -8.5f, 4.3f, -66.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
 		m_pSpherePBR->SetMaterial(kDefaultPBRMaterial, m_pSpherePBR->GetRootNode()->m_name);
 
 		m_pSpherePBR->SetTransform(spherePBRTransform);
@@ -92,7 +92,7 @@ namespace noctis
 		m_pModels.push_back(m_pSpherePBR);
 
 		m_pSpherePhong = AssetImporter::Instance().LoadModel("..\\resources\\Models\\SphereFBX\\sphere.fbx");
-		Transform spherePhongTransform({ 0.0f, 0.0f, 40.0f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
+		Transform spherePhongTransform({ -19.3f, 3.8f, -48.3f }, { 0.0f, 0.0f, 0.0f }, { 4.0f, 4.0f, 4.0f });
 		m_pSpherePhong->SetMaterial(kDefaultMaterial, "Sphere");
 		m_pSpherePhong->SetName("PhongShpere");
 		m_pSpherePhong->SetTransform(spherePhongTransform);
@@ -123,8 +123,10 @@ namespace noctis
 
 		//Add some  lights to the scene
 		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kDirectional, { 0.1f, 0.1f, 0.1f, 1.0f }, math::Nvec3::Zero(), { -0.2f, -1.0f, -0.3f })));
-		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 50.0f, 30.0f }, math::Nvec3::Zero(), { 1.0f, 0.0022f, 0.00019f })));
-
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 50.0f, 30.0f }, math::Nvec3::Zero(), { 1.0f, 0.045f, 0.0019f })));
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 40.0f, 40.0f, 40.0f, 1.0f }, { 1057.6f, 337.6f, 0.0f }, math::Nvec3::Zero(), { 1.0f, 0.318f, 0.011f })));
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 0.937f, 0.388f, 0.051f, 1.0f }, { 489.3f, 132.1f, -218.4f }, math::Nvec3::Zero(), { 1.0f, 0.045f, 0.002f })));
+		m_pLights[0]->m_enabled = false;
 
 		//Create shaders
 		m_pVShader = std::make_shared<VertexShader>(m_pRenderDevice, L"../resources/Shaders/PhongLightingVertexShader.hlsl");
@@ -525,7 +527,8 @@ namespace noctis
 			int misc_flags = ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoOptions;
 			ImGui::ColorEdit3("Color", (float*)&selectedLight->GetColor(), misc_flags);
 			ImGui::SameLine(); HelpMarker("Click on the colored square to open a color picker.\nCTRL+click on individual component to input value.\n");
-			ImGui::DragFloat3("Attenuation", &selectedLight->GetAttenuation().x, 0.01f, 0.01f, 1.0f);
+			if (selectedLight->GetType() == NoctisLight::Type::kPoint)
+				ImGui::DragFloat3("Attenuation", &selectedLight->GetAttenuation().x, 0.0001f, 0.0001f, 1.0f);
 		}
 		else if (GLTFModel)
 		{
@@ -610,7 +613,7 @@ namespace noctis
 
 	void ExampleDx11App::AddLight()
 	{
-		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 50.0f, 0.0f }, math::Nvec3::Zero(), { 1.0f, 0.0022f, 0.00019f })));
+		m_pLights.push_back(std::make_shared<NoctisLight>(NoctisLight(m_pRenderDevice, NoctisLight::Type::kPoint, { 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 50.0f, 0.0f }, math::Nvec3::Zero(), { 1.0f, 0.045f, 0.0019f })));
 		m_pFlatPipelinePass->AddIRenderables(m_pLights.back());
 	}
 }
