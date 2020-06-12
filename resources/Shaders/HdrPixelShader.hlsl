@@ -28,7 +28,7 @@ float4 PS(ps_Input pin) : SV_TARGET
 	//float mappedLuminance = (luminance * (1.0 + luminance / (pureWhite * pureWhite))) / (1.0 + luminance);
 
 	// reinhard tone mapping
-	float3 mappedColor = color / (color + 1.0f);
+	color = color / (color + 1.0f);
 
 	// Scale color by ratio of average luminances.
 	//float3 mappedColor = (mappedLuminance / luminance) * color;
