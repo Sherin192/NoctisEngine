@@ -36,8 +36,8 @@ struct GPUMaterial
 	float4 reflect;								// 16 bytes
 	//-----------------------------------
 	int textureBitField;						// 4  bytes
-	bool blinn;
-	float2 pad;									// 12 bytes
+	bool blinn;									// 4  bytes
+	float2 pad;									// 8  bytes
 };												// 64 bytes total
 
 struct PBRMaterialData
